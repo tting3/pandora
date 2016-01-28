@@ -1,45 +1,98 @@
+===============================================================================
+                                    Authors
+===============================================================================
+1. Zilin Wang
+2. Tu-hsiang Ting
 
-Data Structures:
+ 
+===============================================================================
+                                    Contents
+===============================================================================
+1. Game conception
+2. Core components
+3. Discussion on implementations
 
-1. Man
-- hunger level
-- hit points
-- occupation
-- happiness: 
-- character(personality, obedience, kindess, laziness)
-- strength(genetics, nurture)
-- privilege
-- tiredness
-- income
+
+===============================================================================
+                                1 Game Conception
+===============================================================================
+1.1 Game play
+The player in this game will control a character whose sole intent is to 
+destory a city through social interactions with NPCs each having distinct
+characteristics and personality traits.
+-------------------------------------------------------------------------------
+1.2 Game Metric
+To win the game, the player will need to reduce the population of the city to
+zero.
+
+
+===============================================================================
+                                2 Core Components
+===============================================================================
+
+
+-------------------------------------------------------------------------------
+2.1 NPCs
+-------------------------------------------------------------------------------
+This section defines the fundamental construct of a NPC. The desired effect is
+to create NPCs that have distinct characteristics and personality traits, 
+which would influence their decision making.
+
+**** Currently only in planning phase, should be more detailed later on
+
+2.1.1 Physiology
+- Hit points: character would die when this value reaches 0.
+- Hunger level: may affect emotion, should cause HP loss at critically low levels
+- Strength:
+- Fatigue
+- Intelligence:
+- Emotion:
+
+2.1.2 Personality traits
+- Character: obedience, kindness, laziness
+
+2.1.3 Social Status
+- Class/Occupation
+- Reputation
+- Relationship 
+
+******** put them in implementation details?
 - inventory
 - hostile list
-- relationship (limits understanding)
-- reputation (overide relationship, different types)
-- intellengce
 - skillset
+- income
 
 
-2. interactions:
-- trade: item/event
-- murder
-- rob
-- assign (high privilege to low privilege, depends)
-- promotion/demotion
-- provide mission
-- give up (mission, constract, dual)
-- chatting (provide hint)
-- contract (plan riot)
+-------------------------------------------------------------------------------
+2.2 Interactions:
+-------------------------------------------------------------------------------
+This section defines the interactions that can be act upon each character.
 
+2.2.1 Trade
 
-3. event
+2.2.2 Attack
+
+2.2.3 Rob/Steal
+
+2.2.4 Delegate
+
+2.2.5 Provide Mission
+
+2.2.6 Chatting
+provide hint
+
+*** Maybe put in implementation details?
+-------------------------------------------------------------------------------
+2.3 event
+-------------------------------------------------------------------------------
 - murder
 - robbery/distribution
 - 
 
 
-4. promotion process
-
-5. Occupation
+-------------------------------------------------------------------------------
+2.4 Class/Occupation
+-------------------------------------------------------------------------------
 
 1. Slaves:
 
