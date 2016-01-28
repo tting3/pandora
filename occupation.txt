@@ -1,0 +1,83 @@
+
+Data Structures:
+
+1. Man
+- hunger level
+- hit points
+- occupation
+- happiness: 
+- character(personality, obedience, kindess, laziness)
+- strength(genetics, nurture)
+- privilege
+- tiredness
+- income
+- inventory
+- hostile list
+- relationship (limits understanding)
+- reputation (overide relationship, different types)
+- intellengce
+- skillset
+
+
+2. interactions:
+- trade: item/event
+- murder
+- rob
+- assign (high privilege to low privilege, depends)
+- promotion/demotion
+- provide mission
+- give up (mission, constract, dual)
+- chatting (provide hint)
+- contract (plan riot)
+
+
+3. event
+- murder
+- robbery/distribution
+- 
+
+
+4. promotion process
+
+5. Occupation
+
+1. Slaves:
+
+- continuously perform duty: harvest, cleaning, building...
+- interesting priviliges (going into royal palace?)
+- might steal and trade
+- probably not happy
+- riot
+
+
+2. Merchant
+- provide mission/contract
+- trade
+- different types (food, resource)
+- import (request carts)
+ 
+3. Soldier/Guard
+- patrolling
+- taxation
+- execution
+- prisioner
+- guard 
+
+7. Buildings
+
+6. Population
+
+- Method of Increase
+* arrival
+
+- Method of decrease
+* disasters
+* interaction
+
+7. Achievement System
+
+
+
+
+
+
