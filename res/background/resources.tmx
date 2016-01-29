@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="100" tileheight="100" nextobjectid="1">
+ <tileset firstgid="1" name="brick" tilewidth="100" tileheight="100" tilecount="1">
+  <image source="brick.png" width="100" height="100"/>
+ </tileset>
+ <tileset firstgid="2" name="brickwithgrass" tilewidth="100" tileheight="100" tilecount="1">
+  <image source="brickwithgrass.png" width="100" height="100"/>
+ </tileset>
+ <layer name="brick" width="1" height="1">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NkYGAAAHm4+JkEAAAA
+  </data>
+ </layer>
+ <layer name="brickwithgrass" width="1" height="1">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NiYGAAAJcXTYsEAAAA
+  </data>
+ </layer>
+</map>

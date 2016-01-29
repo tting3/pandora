@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="roofs" tilewidth="50" tileheight="50" tilecount="100">
+  <image source="roofs.png" width="500" height="500"/>
+ </tileset>
+ <layer name="back" width="10" height="10">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGDjABMSMWDAzmjoOIGbHgjnp5lII4KKDHQBbJBytkAEAAA==
+  </data>
+ </layer>
+ <layer name="front" width="10" height="10">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGBxAEIiFCKhRBGJhIBYBYiU86uSBWBSIxYBYAY86WSDmBWI+IJYj1qE0BgDcHUsNkAEAAA==
+  </data>
+ </layer>
+</map>

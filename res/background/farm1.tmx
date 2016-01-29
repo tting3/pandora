@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="5" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
+  <image source="collision.png" width="250" height="50"/>
+ </tileset>
+ <tileset firstgid="6" name="farm" tilewidth="50" tileheight="50" tilecount="260">
+  <image source="RPGpack_sheet.png" width="1000" height="650"/>
+ </tileset>
+ <layer name="collision" width="5" height="5">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgYGBghGJaAQA5aJRWZAAAAA==
+  </data>
+ </layer>
+ <layer name="grass" width="5" height="5">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NjYGBgR8IcQCwFxNJIWAYqxgnEXGhiskAshySmB8T6SNgAiAE90oz5ZAAAAA==
+  </data>
+ </layer>
+ <layer name="plants" width="5" height="5">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgwA52IWFSxdABAJYohWxkAAAA
+  </data>
+ </layer>
+ <layer name="fences" width="5" height="5">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgYGB4AcRXGGgHAKkh7TtkAAAA
+  </data>
+ </layer>
+</map>

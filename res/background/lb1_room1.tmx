@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="11" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
+  <image source="collision.png" width="250" height="50"/>
+ </tileset>
+ <tileset firstgid="6" name="room" tilewidth="50" tileheight="50" tilecount="20">
+  <image source="room.png" width="500" height="100"/>
+ </tileset>
+ <tileset firstgid="26" name="RPGpack_sheet" tilewidth="50" tileheight="50" tilecount="260">
+  <image source="RPGpack_sheet.png" width="1000" height="650"/>
+ </tileset>
+ <layer name="collision" width="10" height="11">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGPyAEQ9GV4cOWIlUh02cFHXo7sHmPmz6calBNoMFizoAbUCrD7gBAAA=
+  </data>
+ </layer>
+ <layer name="floor" width="10" height="11">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGD6ADYg5gZgHCXMBMTsWdTxYMDZ1HGhquLGow2YuLjWkqMMHALzLARe4AQAA
+  </data>
+ </layer>
+ <layer name="entrance" width="10" height="11">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGJqAn0h1AjR1BWWAlwK9AAcOov24AQAA
+  </data>
+ </layer>
+ <layer name="storage" width="10" height="11">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGAX4wKuBdgAOAAD9NnpsuAEAAA==
+  </data>
+ </layer>
+</map>

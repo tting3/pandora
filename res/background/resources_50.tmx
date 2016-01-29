@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="13" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="RPGpack_sheet" tilewidth="50" tileheight="50" tilecount="260">
+  <image source="RPGpack_sheet.png" width="1000" height="650"/>
+ </tileset>
+ <layer name="resources" width="20" height="13">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAACw3DA7QVBgAA0Pf72diy3VrLtm2vWl62bdu2ja1lW8u2bbt7zr1BgUAghMGGNJShDWNYwxneCEY0kpGNYlSjGd0Y/uKvxjSWsY1jXOMZ3wQmNJGJTWJSk5ncFKY0lalN42+m9XfT+YfpzWBGM5nZLGY1m9nNYU5zmds85jWf+S1gQQtZ2CIWtZjFLWFJS1naMpa1nOWtYEUrWdkqVrWa1a1hTf+0lrWt41/WtZ71bWBDG9nYv21iU5vZ3Ba2tJWtbWNb29neDna0k53tYle72d0e9rSXve1jX/vZ3wEOdJCDHeJQhzncEY50lKMd41jHOd4JTnSSk53iVKc53RnOdJazneNc5znfBS50kYtd4lKXudwVrnSVq13jWte53n/81w3+50Y3udktbnWb293hTne52z3udZ/7PeBBD3nYIx71mMf93xOe9JSnPeNZz3neC170kpe94lWved0b3vSWt73jXe953wc+9JGPfeJTn/ncF770la9941vf+d4PfvSTn/3iV7/53R8GgjCEwYb0JwMtgLMQBAAA
+  </data>
+ </layer>
+</map>
