@@ -16,8 +16,8 @@
 
 local SecondScene = class("SecondScene", cc.load("mvc").ViewBase)
 
-local DAY_TIME = 120.0
-local DAWN_TIME = 10.0
+local DAY_TIME = 0.0
+local DAWN_TIME = 0.0
 local NIGHT_TIME = 100.0
 local DAWN = 0
 local DAY = 1
@@ -521,21 +521,19 @@ local function enter_night(self)
         if self.torches[i].sprite ~= nil then
             self.torches[i].sprite:setGLProgram(night_char)
             lights_num = lights_num + 1
-            lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) * self.screen_ratio.x + display.cx), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) * self.screen_ratio.y + display.cy))
+            lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) + display.cx), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) + display.cy))
         end
     end
 
     self.structs_roof:setGLProgram(night_back)
     self.structs_wall:setGLProgram(night_back)
     local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
-    gl_state:setUniformVec2("ratio", self.screen_ratio)
     gl_state:setUniformInt("lights_num", lights_num)
     for i, single_light in pairs(lights) do
         gl_state:setUniformVec2("light"..(i-1), single_light)
     end
 
     local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
-    gl_state:setUniformVec2("ratio", self.screen_ratio)
     gl_state:setUniformInt("lights_num", lights_num)
     for i, single_light in pairs(lights) do
         gl_state:setUniformVec2("light"..(i-1), single_light)
@@ -568,13 +566,12 @@ function SecondScene:step(dt)
         for i, single_torch in pairs(self.torches) do
             if self.torches[i].sprite ~= nil then
                 lights_num = lights_num + 1
-                lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) * self.screen_ratio.x + display.cx), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) * self.screen_ratio.y + display.cy))
+                lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) * (self.screen_ratio.x - 1136/960 + 1) + display.cx * self.screen_ratio.x), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) * self.screen_ratio.y + display.cy * self.screen_ratio.y))
             end
         end
 
         local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
         local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
-        gl_state:setUniformVec2("ratio", self.screen_ratio)
         gl_state:setUniformInt("lights_num", lights_num)
         for i, single_light in pairs(lights) do
             gl_state:setUniformVec2("light"..(i-1), single_light)
@@ -582,7 +579,6 @@ function SecondScene:step(dt)
 
         local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
         local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
-        gl_state:setUniformVec2("ratio", self.screen_ratio)
         gl_state:setUniformInt("lights_num", lights_num)
         for i, single_light in pairs(lights) do
             gl_state:setUniformVec2("light"..(i-1), single_light)
@@ -935,7 +931,8 @@ function SecondScene:onCreate()
     --local origin = cc.Director:getInstance():getOpenGLView():getVisibleOrigin()
     --local visible_size = cc.Director:getInstance():getVisibleSize()
 
-    self.screen_ratio = cc.p(screen_size["width"]/frame_size["width"], screen_size["height"]/frame_size["height"])
+    --self.screen_ratio = cc.p(screen_size["width"]/frame_size["width"], screen_size["height"]/frame_size["height"])
+    self.screen_ratio = cc.p(frame_size["width"]/screen_size["width"], frame_size["height"]/screen_size["height"])
     --self.shader_ratio = cc.p(screen_size["width"]/visible_size["width"], screen_size["height"]/visible_size["height"])
     --self.olo:setString(frame_size["width"]..""..frame_size["height"])
     --self.olo:setString(screen_size["width"]..""..screen_size["height"])

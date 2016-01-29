@@ -5,7 +5,6 @@ precision highp float;
 varying vec4 v_fragmentColor;
 varying vec2 v_texCoord;
 
-uniform vec2 ratio;
 uniform int lights_num;
 uniform vec2 light0;
 uniform vec2 light1;
@@ -19,7 +18,6 @@ void main()
 	if(v_orColor.a == 0.0){
 		return;
 	}
-	vec2 texcoord = gl_FragCoord.xy * ratio.xy;
 	float root = 70000.0;
 	vec2 lights[5];
 	lights[0] = light0;
@@ -29,7 +27,7 @@ void main()
 	lights[4] = light4;
 	int i;
 	for(i = 0; i < lights_num; i++){
-		float temp_root = (texcoord.x - lights[i].x)*(texcoord.x - lights[i].x)+(texcoord.y - lights[i].y)*(texcoord.y - lights[i].y);
+		float temp_root = (gl_FragCoord.x - lights[i].x)*(gl_FragCoord.x - lights[i].x)+(gl_FragCoord.y - lights[i].y)*(gl_FragCoord.y - lights[i].y);
 		if(temp_root < root){
 			root = temp_root;
 		}
