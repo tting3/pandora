@@ -116,6 +116,9 @@ provide hint
 - prisioner
 - guard 
 
+4. Policy Maker
+Monetary policies, education, ...
+
 7. Buildings
 
 6. Population
