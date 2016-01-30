@@ -13,6 +13,7 @@ local failed = -1
 local FINDING_TARGET = 0
 local STALKING = 1
 local STEALING = 2
+local SIGHT = 10
 
 local thief = {
     task_name = -1,
@@ -20,8 +21,6 @@ local thief = {
     steal_status = 0,
     steal = function(self, minions, structs, map, index, dt)
         if self.steal_status == FINDING_TARGET then
-            --for i = 0, 10
-            --minions[index].map_characters[]
         end
     end
 }
