@@ -5,17 +5,17 @@ precision highp float;
 varying vec4 v_fragmentColor;
 varying vec2 v_texCoord;
 
-uniform int lights_num;
 uniform vec2 light0;
 uniform vec2 light1;
 uniform vec2 light2;
 uniform vec2 light3;
 uniform vec2 light4;
+uniform int lights_num;
 
 void main()
 {
 	vec4 v_orColor = v_fragmentColor * texture2D(CC_Texture0, v_texCoord);
-	if(v_orColor.a == 0){
+	if(v_orColor.a == 0.0){
 		gl_FragColor = vec4(v_orColor.r,v_orColor.g,v_orColor.b,v_orColor.a);
 		return;
 	}
