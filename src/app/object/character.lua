@@ -202,11 +202,11 @@ local character = {
         self.map_characters = new_map_characters
     end,
     update_map_characters = function(self, x, y)
-        local new_i = math.floor((self.position.x + x) / 50.0)
-        local new_j = math.floor((self.position.y + y) / 50.0)
+        local new_i = math.floor((self.position.x + x) / 50.0) + 1
+        local new_j = math.floor((self.position.y + y) / 50.0) + 1
         if self.last_map_index ~= 0 then
-            local old_i = math.floor(self.position.x / 50.0)
-            local old_j = math.floor(self.position.y / 50.0)
+            local old_i = math.floor(self.position.x / 50.0) + 1
+            local old_j = math.floor(self.position.y / 50.0) + 1
             if old_i == new_i and old_j == new_j then
                 return
             end

@@ -16,8 +16,8 @@
 
 local SecondScene = class("SecondScene", cc.load("mvc").ViewBase)
 
-local DAY_TIME = 0.0
-local DAWN_TIME = 0.0
+local DAY_TIME = 120.0
+local DAWN_TIME = 10.0
 local NIGHT_TIME = 100.0
 local DAWN = 0
 local DAY = 1
@@ -97,12 +97,14 @@ function SecondScene:init_minion_frame()
     end
 
     self.minion_size = 1
-    for i = 0, 2 do
+    for i = 0, 29 do
         self:make_minion("John"..(i+ 1), identity.slave_farm, -150-i*10, -50)
         self.minions[i+1].logic:farm_init(self.structs)
         self.minions[i+1].logic:sleep_init(self.structs)
     end
-    self:make_minion("Jack", identity.free_folk, -150, 50)
+    for i = 0, 29 do
+        self:make_minion("Jack", identity.free_folk, -150-i*10, 50)
+    end
 end
 
 function SecondScene:make_minion(name, id, x, y)
@@ -566,7 +568,7 @@ function SecondScene:step(dt)
         for i, single_torch in pairs(self.torches) do
             if self.torches[i].sprite ~= nil then
                 lights_num = lights_num + 1
-                lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) * (self.screen_ratio.x) + display.cx * self.screen_ratio.x), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) * self.screen_ratio.y + display.cy * self.screen_ratio.y))
+                lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) * (self.screen_ratio.x - 1136.0/960.0 + 1) + display.cx * self.screen_ratio.x), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) * self.screen_ratio.y + display.cy * self.screen_ratio.y))
             end
         end
 

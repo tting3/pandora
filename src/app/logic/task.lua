@@ -12,6 +12,7 @@ local task = {
     JOB_HUNTING = 2,
     PATROLLING = 3,
     GOING_TO_BED = 4,
+    STEALING = 5
 }
 
 return task

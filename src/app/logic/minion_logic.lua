@@ -19,6 +19,7 @@ local STOP = -1
 
 local identity = require("app.logic.identity")
 local farmer = require("app.logic.farmer")
+local thief = require("app.logic.thief")
 local sleep = require("app.logic.sleep")
 local task = require("app.logic.task")
 local functionality = require("app.object.functionality")
@@ -88,6 +89,13 @@ local minion_logic = {
             end
         end
     end,
+    steal = function(self, minions, structs, map, index, dt)
+        if self.curr_task.task_name == task.STEALING then
+            local result = self.curr_task:steal(minions, structs, map, index, dt)
+            if result == success then
+            end
+        end
+    end,
     think_about_life = function(self, minions, structs, time, map, index, dt)
         if minions[index].id == identity.slave_farm then
             if time == DAY or time == DAWN then
@@ -125,7 +133,11 @@ local minion_logic = {
                 end
             end
         elseif minions[index].id == identity.free_folk then
-
+            if self.curr_task == nil then
+                self.curr_task = thief:new()
+                self.curr_task.task_name = task.STEALING
+            end
+            self:steal(minions, structs, map, index, dt)
         end
     end,
     find_task = function(self, task_name)
