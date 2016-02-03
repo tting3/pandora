@@ -97,13 +97,16 @@ function SecondScene:init_minion_frame()
     end
 
     self.minion_size = 1
-    for i = 0, 29 do
+    local a = 29
+    local b = 29
+    for i = 0, a do
         self:make_minion("John"..(i+ 1), identity.slave_farm, -150-i*10, -50)
         self.minions[i+1].logic:farm_init(self.structs)
         self.minions[i+1].logic:sleep_init(self.structs)
     end
-    for i = 0, 29 do
+    for i = 0, b do
         self:make_minion("Jack", identity.free_folk, -150-i*10, 50)
+        self.minions[a+i+2].logic:thief_init({1, 2})
     end
 end
 
@@ -111,7 +114,7 @@ function SecondScene:make_minion(name, id, x, y)
     self.minions[self.minion_size] = character:new()
     self.minions[self.minion_size].sprite = display.newSprite(display.getAnimationCache(minion_motions[DOWN]):getFrames()[1]:getSpriteFrame())
     :addTo(self.c_node)
-    self.minions[self.minion_size]:set_map_characters(self.map_characters, self.minion_size)
+    self.minions[self.minion_size]:set_map_characters(self.map_characters, self.minion_size, self.minions, self.m_character)
     self.minions[self.minion_size]:set_position(self.width / 2 + x, self.height / 2 + y)
     self.minions[self.minion_size]:change_position(0.0, 0.0, self.width / 2, self.height / 2)
     self.minions[self.minion_size]:set_name(name, 0.0)
@@ -645,7 +648,7 @@ function SecondScene:step(dt)
     end
 
     for i, minion in pairs(self.minions) do
-        self.minions[i].logic:think_about_life(self.minions, self.structs, self.light_status, self.map_build_index, i, dt)
+        self.minions[i].logic:think_about_life(self.m_character, self.minions, self.structs, self.light_status, self.map_build_index, i, dt)
         self:detect_minion(i)
         self:update_minion(i)
     end
@@ -817,12 +820,12 @@ function SecondScene:onCreate()
 
     self:create_farm(2, "farm1", 30, 1300)
 
-    self:init_minion_frame(self)
     self.m_character = character:new()
+    self:init_minion_frame(self)
     local frame = display.getAnimationCache(minion_motions[DOWN]):getFrames()[2]
     self.m_character.sprite = display.newSprite(frame:getSpriteFrame())
         :addTo(self.c_node, math.floor(display.cy))
-    self.m_character:set_map_characters(self.map_characters, 0)
+    self.m_character:set_map_characters(self.map_characters, 0, self.minions, self.m_character)
     self.m_character:set_position(self.width / 2, self.height / 2)
     self.m_character:change_position(0.0, 0.0, self.width / 2, self.height / 2)
     self.m_character:set_name("Pandora", 0.2)

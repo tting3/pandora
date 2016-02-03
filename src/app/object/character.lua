@@ -32,7 +32,9 @@ local character = {
     last_act = STOP,
     height_level = 0,
     map_characters = nil,
-    last_map_index = 0,
+    minions = nil,
+    m_character = nil,
+    last_map_index = -1,
     index = 0,
     inventory = {},
     set_position = function(self, x, y)
@@ -197,14 +199,16 @@ local character = {
             :setAnchorPoint(0.0, 0.5)
             :addTo(self.sprite)
     end,
-    set_map_characters = function(self, new_map_characters, index)
+    set_map_characters = function(self, new_map_characters, index, minions, m_character)
         self.index = index
         self.map_characters = new_map_characters
+        self.minions = minions
+        self.m_character = m_character
     end,
     update_map_characters = function(self, x, y)
         local new_i = math.floor((self.position.x + x) / 50.0) + 1
         local new_j = math.floor((self.position.y + y) / 50.0) + 1
-        if self.last_map_index ~= 0 then
+        if self.last_map_index ~= -1 then
             local old_i = math.floor(self.position.x / 50.0) + 1
             local old_j = math.floor(self.position.y / 50.0) + 1
             if old_i == new_i and old_j == new_j then
@@ -212,8 +216,14 @@ local character = {
             end
             local old_num = self.map_characters[old_i][old_j][1]
             for i = self.last_map_index, old_num + 1 do
-                if i ~= old_num then
+                if i ~= old_num + 1 then
                     self.map_characters[old_i][old_j][i] = self.map_characters[old_i][old_j][i + 1]
+                    if self.map_characters[old_i][old_j][i] ~= 0 and self.map_characters[old_i][old_j][i] ~= nil then
+                        self.minions[self.map_characters[old_i][old_j][i]].last_map_index = self.minions[self.map_characters[old_i][old_j][i]].last_map_index - 1
+                    end
+                    if self.map_characters[old_i][old_j][i] == 0 then
+                        self.m_character.last_map_index = self.m_character.last_map_index - 1
+                    end
                 else
                     self.map_characters[old_i][old_j][i] = nil
                 end
@@ -246,7 +256,9 @@ function character:new(o)
     o.dir = STOP
     o.height_level = 0
     o.map_characters = nil
-    o.last_map_index = 0
+    o.minions = nil
+    o.m_character = nil
+    o.last_map_index = -1
     o.index = 0
     o.inventory = {}
     return o

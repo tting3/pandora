@@ -89,6 +89,17 @@ local minion_logic = {
             end
         end
     end,
+    thief_init = function(self, target_structs)
+        local task_index = self:find_task(task.STEALING)
+        if task_index == -1 then
+            self.queued_tasks_num = self.queued_tasks_num + 1
+            task_index = self.queued_tasks_num
+        end
+        self.queued_tasks[task_index] = thief:new()
+        self.queued_tasks[task_index].task_index = task_index
+        self.queued_tasks[task_index].task_name = task.STEALING
+        self.queued_tasks[task_index]:patrol_init(target_structs)
+    end,
     steal = function(self, minions, structs, map, index, dt)
         if self.curr_task.task_name == task.STEALING then
             local result = self.curr_task:steal(minions, structs, map, index, dt)
@@ -96,7 +107,8 @@ local minion_logic = {
             end
         end
     end,
-    think_about_life = function(self, minions, structs, time, map, index, dt)
+    think_about_life = function(self, m_character, minions, structs, time, map, index, dt)
+        --minions[index]:set_name(minions[index].last_map_index, 0.0)
         if minions[index].id == identity.slave_farm then
             if time == DAY or time == DAWN then
                 if self.curr_task == nil then
@@ -134,10 +146,11 @@ local minion_logic = {
             end
         elseif minions[index].id == identity.free_folk then
             if self.curr_task == nil then
-                self.curr_task = thief:new()
-                self.curr_task.task_name = task.STEALING
+                local task_index = self:find_task(task.STEALING)
+                self.curr_task = self.queued_tasks[task_index]
+            elseif self.curr_task.task_name == task.STEALING then
+                self:steal(m_character, minions, structs, map, index, dt)
             end
-            self:steal(minions, structs, map, index, dt)
         end
     end,
     find_task = function(self, task_name)

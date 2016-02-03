@@ -10,7 +10,7 @@ local item_type = {
     COIN = 1,
     CROP = 2,
     SWORD = 3,
-    hood = 4
+    HOOD = 4
 }
 
 return item_type
