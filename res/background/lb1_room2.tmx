@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="11" tilewidth="50" tileheight="50" nextobjectid="1">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="9" height="7" tilewidth="50" tileheight="50" nextobjectid="1">
  <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
   <image source="collision.png" width="250" height="50"/>
  </tileset>
@@ -9,24 +9,24 @@
  <tileset firstgid="26" name="beds" tilewidth="50" tileheight="50" tilecount="96">
   <image source="beds.png" width="600" height="400"/>
  </tileset>
- <layer name="collision" width="10" height="11">
+ <layer name="collision" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGPyAEQ9GV4cOWIhUh00cmz3Y7MWmH5cadHPxqcMHAI+WFym4AQAA
+   H4sIAAAAAAAAC2NgYGBgxINhAJkNAyxEqEEXx2U2Nr3Emo3NTGIAAIgr4w38AAAA
   </data>
  </layer>
- <layer name="floor" width="10" height="11">
+ <layer name="floor" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGD6ADYg5gJgHiLmhNB8Qs2NRB5LjhNIwPejqsJmLSw2yudwE1MHUElKDDwAA83e5ubgBAAA=
+   H4sIAAAAAAAAC2NgIA6wATEHEPMAMTeU5gNidjQ1IHFOKA1Tz86ACdgIyCObx41HDUwdPnlcAADR3pPK/AAAAA==
   </data>
  </layer>
- <layer name="entrance" width="10" height="11">
+ <layer name="entrance" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGN6Af6AdQCMAACEw+m+4AQAA
+   H4sIAAAAAAAAC2NgIB/wU6B3MAAA/JniVfwAAAA=
   </data>
  </layer>
- <layer name="beds" width="10" height="11">
+ <layer name="beds" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGF7Ahkh1HjR1Be0BAEZWsQu4AQAA
+   H4sIAAAAAAAAC2NgIB7YEKHGgwTzBhoAAOnWf7r8AAAA
   </data>
  </layer>
 </map>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="11" tilewidth="50" tileheight="50" nextobjectid="1">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="9" height="7" tilewidth="50" tileheight="50" nextobjectid="1">
  <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
   <image source="collision.png" width="250" height="50"/>
  </tileset>
@@ -9,24 +9,24 @@
  <tileset firstgid="26" name="RPGpack_sheet" tilewidth="50" tileheight="50" tilecount="260">
   <image source="RPGpack_sheet.png" width="1000" height="650"/>
  </tileset>
- <layer name="collision" width="10" height="11">
+ <layer name="collision" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGPyAEQ9GV4cOWIlUh02cFHXo7sHmPmz6calBNoMFizoAbUCrD7gBAAA=
+   H4sIAAAAAAAAC2NgYGBgxINhAJkNA6xEqEEXJ1YNNvux6SXWbBBmQVMDAJQ1LD38AAAA
   </data>
  </layer>
- <layer name="floor" width="10" height="11">
+ <layer name="floor" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGD6ADYg5gZgHCXMBMTsWdTxYMDZ1HGhquLGow2YuLjWkqMMHALzLARe4AQAA
+   H4sIAAAAAAAAC2NgIA6wATEnEPMgYS4gZkdTw4MFo6vhQJPnRlODzTxs8sSqwQUASjaxuPwAAAA=
   </data>
  </layer>
- <layer name="entrance" width="10" height="11">
+ <layer name="entrance" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGJqAn0h1AjR1BWWAlwK9AAcOov24AQAA
+   H4sIAAAAAAAAC2NgwA74cYgjAwEi1NAL8JKhBwAcX/Vn/AAAAA==
   </data>
  </layer>
- <layer name="storage" width="10" height="11">
+ <layer name="storage" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGAX4wKuBdgAOAAD9NnpsuAEAAA==
+   H4sIAAAAAAAAC2NgoD94NQB2YgMAyiPc1vwAAAA=
   </data>
  </layer>
 </map>

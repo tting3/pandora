@@ -119,7 +119,6 @@ local cal_shortest_dis_new = {
                 end
                 if minions[index].height_level == 1 and struct.room1 ~= nil then
                     level = struct.room1
-                    --minions[index]:set_name("room1")
                 end
                 if minions[index].height_level == 2 and struct.room2 ~= nil  then
                     level = struct.room2

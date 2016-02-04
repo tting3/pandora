@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="11" tilewidth="50" tileheight="50" nextobjectid="1">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="9" height="7" tilewidth="50" tileheight="50" nextobjectid="1">
  <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
   <image source="collision.png" width="250" height="50"/>
  </tileset>
  <tileset firstgid="6" name="walls" tilewidth="50" tileheight="50" tilecount="10">
   <image source="walls.png" width="500" height="50"/>
  </tileset>
- <layer name="collision" width="10" height="11">
+ <layer name="collision" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGD6ACYgZsWBmGqvDph6XGmR1rATU4QMAeSPaNLgBAAA=
+   H4sIAAAAAAAAC2NgIA4wATEjFsxMAzXY1GKTR1bDikcNLgAA/r20dPwAAAA=
   </data>
  </layer>
- <layer name="back" width="10" height="11">
+ <layer name="back" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGD6ADYg5sGB2GqvDph6XGlLU4QMAAmQONLgBAAA=
+   H4sIAAAAAAAAC2NgIA6wATEHFsxOAzXY1GKTJ1YNLgAAO0ZxpfwAAAA=
   </data>
  </layer>
- <layer name="front" width="10" height="11">
+ <layer name="front" width="9" height="7">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgGJ6AA4rxATYkdewE1HESqQ6khosIdbxAzE1AHQzwYBEDAKZRASy4AQAA
+   H4sIAAAAAAAAC2NgIB1wQDEuwIakhh2PGk4i1IDkuQio4QVibjxqYIAHjQ8A/jPAjPwAAAA=
   </data>
  </layer>
 </map>

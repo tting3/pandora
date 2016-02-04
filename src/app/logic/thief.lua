@@ -17,12 +17,15 @@ local SIGHT = 5
 
 local identity = require("app.logic.identity")
 local patrol = require("app.logic.patrol")
+local cal_shortest_dis = require("app.logic.cal_shortest_dis")
 
 local thief = {
     task_name = -1,
     task_index = -1,
     steal_status = 0,
     targets_list = {},
+    stalking_target = nil,
+    path = nil,
     patrol = nil,
     patrol_init = function(self, target_structs)
         self.targets_list = {identity.slave_farm}
@@ -107,11 +110,44 @@ local thief = {
     end,
     steal = function(self, m_character, minions, structs, map, index, dt)
         if self.steal_status == FINDING_TARGET then
-            self.patrol:patroling(minions, index, structs, map ,dt)
+            self.patrol:patroling(minions, structs, map, index, dt)
         end
         if self.steal_status == FINDING_TARGET and math.random(20) <= 2 then
             local result = self:check_surroundings(m_character, minions, index, SIGHT)
-            minions[index]:set_name(tostring(result), 0.0)
+            if result ~= -1 then
+                self.patrol.path = nil
+                self.stalking_target = result
+                self.steal_status = STALKING
+            end
+        end
+        if self.steal_status == STALKING then
+            if self.path == nil then
+                self.path = cal_shortest_dis:new()
+                self.path.points[self.path.point_index] = minions[index].position
+                if self.stalking_target ~= 0 then
+                    self.path.dest = minions[self.stalking_target].position
+                else
+                    self.path.dest = m_character.position
+                end
+            end
+            if self.stalking_target ~= 0 then
+                local dis = (minions[self.stalking_target].position.x - minions[index].position.x) * (minions[self.stalking_target].position.x - minions[index].position.x) + (minions[self.stalking_target].position.y - minions[index].position.y) * (minions[self.stalking_target].position.y - minions[index].position.y)
+                if minions[self.stalking_target].height_level > minions[index].height_level or dis > 50*5*50*5 then
+                    self.path = nil
+                    self.steal_status = FINDING_TARGET
+                    return working
+                end
+            else
+                local dis = (m_character.position.x - m_character.position.x) * (m_character.position.x - m_character.position.x) + (m_character.position.y - m_character.position.y) * (m_character.position.y - m_character.position.y)
+                if m_character.height_level > m_character.height_level or dis > 50*5*50*5 then
+                    self.path = nil
+                    self.steal_status = FINDING_TARGET
+                    return working
+                end
+            end
+            if self.path:cal(minions, structs, map, index, dt) == true then
+                self.path = nil
+            end
         end
         return working
     end
@@ -125,6 +161,8 @@ function thief:new(o)
     o.task_index = -1
     o.steal_status = 0
     o.targets_list = {}
+    o.stalking_target = nil
+    o.path = nil
     o.patrol = nil
     return o
 end

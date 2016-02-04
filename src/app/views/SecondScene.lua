@@ -97,16 +97,16 @@ function SecondScene:init_minion_frame()
     end
 
     self.minion_size = 1
-    local a = 29
-    local b = 29
+    local a = 3
+    local b = 1
     for i = 0, a do
-        self:make_minion("John"..(i+ 1), identity.slave_farm, -150-i*10, -50)
+        self:make_minion("John"..(i+1), identity.slave_farm, -150-i*10, -50)
         self.minions[i+1].logic:farm_init(self.structs)
         self.minions[i+1].logic:sleep_init(self.structs)
     end
     for i = 0, b do
-        self:make_minion("Jack", identity.free_folk, -150-i*10, 50)
-        self.minions[a+i+2].logic:thief_init({1, 2})
+        self:make_minion("Jack"..(i+1), identity.free_folk, -150-i*10, 50)
+        self.minions[a+i+2].logic:thief_init({1, 2, 3, 4})
     end
 end
 
@@ -819,6 +819,8 @@ function SecondScene:onCreate()
     --self:create_lb(2, "lb1", -250, 750)
 
     self:create_farm(2, "farm1", 30, 1300)
+    self:create_lb(3, "lb1", -550, 100)
+    self:create_lb(4, "lb1", -100, -350)
 
     self.m_character = character:new()
     self:init_minion_frame(self)
@@ -919,7 +921,7 @@ function SecondScene:onCreate()
         :move(self.torches[1].position.x - self.m_character.position.x + display.cx, self.torches[1].position.y - self.m_character.position.y + display.cy + 40)
         :addTo(self.c_node, math.floor(display.top - (self.torches[1].position.y - self.m_character.position.y + display.cy)))
     self.torches[2] = torch:new()
-    self.torches[2].position = cc.p(-1000 + self.width / 2, 100 + self.height / 2)
+    self.torches[2].position = cc.p(-700 + self.width / 2, 100 + self.height / 2)
     self.torches[2].sprite = display.newSprite("background/torch.png")
         :move(self.torches[2].position.x - self.m_character.position.x + display.cx, self.torches[2].position.y - self.m_character.position.y + display.cy + 40)
         :addTo(self.c_node, math.floor(display.top - (self.torches[2].position.y - self.m_character.position.y + display.cy)))
