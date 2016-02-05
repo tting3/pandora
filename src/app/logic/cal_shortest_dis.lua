@@ -316,7 +316,7 @@ local cal_shortest_dis_new = {
                         end
                         if start_check == true then
                             --minions[index]:set_name(i..""..j, 0.0)
-                            --minions[index]:set_name(table.getn(self.points).."", 0.0)
+                            --minions[index]:set_name(table.getn(self.points).."", -5.0)
                             if self.direction == CLOCK then
                                 if self.pos_dir == DOWN then
                                     self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
@@ -387,6 +387,7 @@ local cal_shortest_dis_new = {
                             return
                         end
                         if self.direction == CLOCK then
+                            --minions[index]:set_name(self.dest.x..""..self.dest.y, 0.0)
                             --minions[index]:set_name("CLOCK", 0.0)
                             --minions[index]:set_name(self.pos_dir.."", -3.0)
                             if self.pos_dir == DOWN then
@@ -485,6 +486,7 @@ local cal_shortest_dis_new = {
                                 end
                             end
                         elseif self.direction == C_CLOCK then
+                            --minions[index]:set_name("c"..self.dest.x..""..self.dest.y, 0.0)
                             --minions[index]:set_name("C_CLOCK", 0.0)
                             if self.pos_dir == DOWN then
                                 --minions[index]:set_name("DOWN", 0.0)
@@ -534,7 +536,6 @@ local cal_shortest_dis_new = {
                                 end
                             end
                             if self.pos_dir == UP then
-                                --minions[index]:set_name("UP", 0.0)
                                 if check(i - 1, j - 1) then
                                     if check(i - 1, j) == true then
                                         self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
@@ -569,9 +570,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y - 2.0)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - j) * struct.tile.y - 2.0)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = DOWN
                                     find_points(i + 1, j - 1, point_index + 2)

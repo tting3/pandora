@@ -95,12 +95,11 @@ function SecondScene:init_minion_frame()
         local animation = display.newAnimation(frames, animation_time)
         display.setAnimationCache(minion_motion, animation)
     end
-
     self.minion_size = 1
-    local a = 3
+    local a = 2
     local b = 1
     for i = 0, a do
-        self:make_minion("John"..(i+1), identity.slave_farm, -150-i*10, -50)
+        self:make_minion("John"..(i+1), identity.slave_farm, 250+i*10, -40)
         self.minions[i+1].logic:farm_init(self.structs)
         self.minions[i+1].logic:sleep_init(self.structs)
     end
@@ -818,7 +817,7 @@ function SecondScene:onCreate()
     --self:create_collision_test(2, -125, 750)
     --self:create_lb(2, "lb1", -250, 750)
 
-    self:create_farm(2, "farm1", 30, 1300)
+    self:create_farm(2, "farm1", -100, 1300)
     self:create_lb(3, "lb1", -550, 100)
     self:create_lb(4, "lb1", -100, -350)
 

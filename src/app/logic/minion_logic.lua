@@ -75,7 +75,7 @@ local minion_logic = {
             if struct.functionality == functionality.LB then
                 self.queued_tasks[task_index].sleep_index = i
                 self.queued_tasks[task_index].bed_level = 2
-                self.queued_tasks[task_index].bed_pos = cc.p(2, 6)
+                self.queued_tasks[task_index].bed_pos = cc.p(2, 2)
                 break
             end
         end

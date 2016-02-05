@@ -66,10 +66,7 @@ local sleep = {
                 self.path = cal_shortest_dis:new()
                 self.path.points[self.path.point_index] = minions[index].position
             end
-            local x = structs[self.sleep_index].position.x + self.bed_pos.x * structs[self.sleep_index].tile.x + 2.0
-            local y = structs[self.sleep_index].position.y + (structs[self.sleep_index].map.y - self.bed_pos.y - 1) * structs[self.sleep_index].tile.y
-            local tile = cc.p(structs[self.sleep_index].tile.x - 4.0, structs[self.sleep_index].tile.y - 2.0)
-            self.path.dest = cal_pos_with_index(cc.p(x, y), cc.p(1, 1), tile)
+            self.path.dest = cc.p(structs[self.sleep_index].position.x + self.bed_pos.x * structs[self.sleep_index].tile.x + 20.0, structs[self.sleep_index].position.y + (structs[self.sleep_index].map.y - self.bed_pos.y - 1) * structs[self.sleep_index].tile.y + 45.0)
             if self.path:cal(minions, structs, map, index, dt) == true then
                 self.path = nil
                 self.entrance_pos = cc.p(-1, -1)
