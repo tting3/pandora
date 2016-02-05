@@ -10,7 +10,7 @@ function MainScene:onCreate()
     :setTextColor(cc.c3b(230, 214, 44))
     :addTo(self, 100)
 
-    local rlayer = require("app.views.TableViewLayer").new()
+    local rlayer = require("app.views.TableViewLayer").new(true)
     rlayer:setAnchorPoint(cc.p(0, 0))
     rlayer:setPosition(cc.p(0, 0))
     self:addChild(rlayer)

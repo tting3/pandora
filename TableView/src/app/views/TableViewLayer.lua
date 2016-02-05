@@ -6,17 +6,12 @@
 -- To change this template use File | Settings | File Templates.
 --
 
--- local rlayer = require("app.scenes.TableViewLayer").new()
---  rlayer:setAnchorPoint(ccp(0, 0))
---  rlayer:setPosition(ccp(0, 0))
---  self:addChild(rlayer)
-
 local TableViewLayer = class("TableViewLayer", function()
     return display.newLayer()
 end)
 
-function TableViewLayer:ctor()
-    self:onEnter()
+function TableViewLayer:ctor(bounceable)
+    self:onEnter(bounceable)
 end
 
 function TableViewLayer.scrollViewDidScroll(view)
@@ -27,44 +22,45 @@ function TableViewLayer.scrollViewDidZoom(view)
     --print("scrollViewDidZoom")
 end
 
-function TableViewLayer.tableCellTouched(table,cell)
+function TableViewLayer.tableCellTouched(table, cell)
     release_print("cell touched at index: " .. cell:getIdx())
 end
 
 function TableViewLayer.cellSizeForTable(table,idx)
-    return 50,50
+    return 400,50
 end
 
 function TableViewLayer.tableCellAtIndex(table, idx)
-    local cell = table:dequeueCell()
-    if cell == nil then
-        cell = cc.TableViewCell:new()
-        local table_bg = display.newSprite("block.png")
-        table_bg:setAnchorPoint(cc.p(0,0))
-        table_bg:setPosition(cc.p(0, 0))
-        cell:addChild(table_bg)
+    --local cell = table:dequeueCell()
+    --if cell == nil then
+    local cell = cc.TableViewCell:new()
+    local table_bg = display.newSprite("block.png")
+    table_bg:setAnchorPoint(cc.p(0, 0))
+    table_bg:setPosition(cc.p(0, 0))
+    cell:addChild(table_bg)
 
-        local label = cc.Label:createWithSystemFont("olo", "", 30)
-        label:setAnchorPoint(cc.p(0.0, 0.0))
-        label:setPosition(cc.p(0.0, 0.0))
-        cell:addChild(label)
-    end
+    local label = cc.Label:createWithSystemFont(idx.."", "", 30)
+    label:setAnchorPoint(cc.p(0.0, 0.0))
+    label:setPosition(cc.p(0.0, 0.0))
+    cell:addChild(label)
+    --end
 
     return cell
 end
 
 function TableViewLayer.numberOfCellsInTableView(table)
-    return 10
+    return 20
 end
 
-function TableViewLayer:onEnter()
+function TableViewLayer:onEnter(bounceable)
     local table_view = cc.TableView:create(cc.size(400, 400))
     table_view:setAnchorPoint(cc.p(0, 0))
     table_view:setDirection(kCCScrollViewDirectionVertical)
     table_view:move(300, 100)
-    table_view:setBounceable(true)
+    table_view:setBounceable(bounceable)
+    table_view:setTouchEnabled(true)
+    table_view:setDelegate()
     self:addChild(table_view)
-    release_print("here")
     table_view:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN) --kCCTableViewFillBottomUp
     table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)
     table_view:registerScriptHandler(self.scrollViewDidZoom,CCTableView.kTableViewZoom)
