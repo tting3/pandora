@@ -9,10 +9,18 @@
 local cal_shortest_dis = require("app.logic.cal_shortest_dis")
 
 local patrol = {
+    target_wait_time = 0.0,
+    waited_time = 0.0,
     target_structs = {},
     path = nil,
     patroling = function(self, minions, structs, map, index, dt)
         if self.path == nil then
+            self.waited_time = self.waited_time + dt
+            --minions[index]:set_name(tostring(dt), 0.0)
+            if self.waited_time < self.target_wait_time then
+                return
+            end
+            self.waited_time = 0.0
             self.path = cal_shortest_dis:new()
             self.path.points[self.path.point_index] = minions[index].position
             math.randomseed(os.time() + index)
@@ -43,6 +51,8 @@ function patrol:new(o)
     self.__index = self
     o.target_structs = {}
     o.path = nil
+    o.target_wait_time = 0.0
+    o.waited_time = 0.0
     return o
 end
 

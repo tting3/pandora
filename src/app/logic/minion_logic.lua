@@ -100,9 +100,9 @@ local minion_logic = {
         self.queued_tasks[task_index].task_name = task.STEALING
         self.queued_tasks[task_index]:patrol_init(target_structs)
     end,
-    steal = function(self, minions, structs, map, index, dt)
+    steal = function(self, m_character, minions, structs, map, index, dt)
         if self.curr_task.task_name == task.STEALING then
-            local result = self.curr_task:steal(minions, structs, map, index, dt)
+            local result = self.curr_task:steal(m_character, minions, structs, map, index, dt)
             if result == success then
             end
         end

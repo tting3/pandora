@@ -31,6 +31,7 @@ local thief = {
         self.targets_list = {identity.slave_farm}
         self.patrol = patrol:new()
         self.patrol.target_structs = target_structs
+        self.patrol.target_wait_time = 0.0
     end,
     check_condition = function(self, m_character, minions, c_index, index)
         if c_index == 0 then
