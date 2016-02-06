@@ -16,7 +16,6 @@ local patrol = {
     patroling = function(self, minions, structs, map, index, dt)
         if self.path == nil then
             self.waited_time = self.waited_time + dt
-            --minions[index]:set_name(tostring(dt), 0.0)
             if self.waited_time < self.target_wait_time then
                 return
             end

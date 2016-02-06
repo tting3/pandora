@@ -16,13 +16,14 @@
 
 local SecondScene = class("SecondScene", cc.load("mvc").ViewBase)
 
-local DAY_TIME = 120.0
-local DAWN_TIME = 10.0
-local NIGHT_TIME = 100.0
+local DAY_TIME = 1.0
+local DAWN_TIME = 1.0
+local NIGHT_TIME = 10.0
 local DAWN = 0
 local DAY = 1
 local TWILIGHT = 2
 local NIGHT = 3
+local LIGHT_TIMER = 0.2
 local MAP_X = 200
 local MAP_Y = 200
 local STOP = -1
@@ -37,6 +38,9 @@ minion_motions[DOWN] = "MINION_DOWN"
 minion_motions[LEFT] = "MINION_LEFT"
 minion_motions[RIGHT] = "MINION_RIGHT"
 minion_motions[UP] = "MINION_UP"
+
+local torch_motion = "TORCH"
+local torch_motion_morning = "TORCH_MORNING"
 
 local font = require("app.views.font")
 local character = require("app.object.character")
@@ -61,6 +65,8 @@ SecondScene.f_width = 0.0
 SecondScene.f_height = 0.0
 SecondScene.time = DAWN_TIME
 SecondScene.light_status = DAY
+SecondScene.light_radius = 60000.0
+SecondScene.light_timer = 0.0
 SecondScene.day_back = nil
 SecondScene.day_char = nil
 SecondScene.dawn_back = nil
@@ -107,6 +113,28 @@ function SecondScene:init_minion_frame()
         self:make_minion("Jack"..(i+1), identity.free_folk, -150-i*10, 50)
         self.minions[a+i+2].logic:thief_init({1, 2, 3, 4})
     end
+end
+
+function SecondScene:init_torch_frame()
+    local torch_images = {}
+    torch_images[1] = display.loadImage("background/torch1.png")
+    torch_images[2] = display.loadImage("background/torch2.png")
+    torch_images[3] = display.loadImage("background/torch3.png")
+    local torch_frames = {}
+    torch_frames[1] = display.newSpriteFrame(torch_images[1], cc.rect(0, 0, 50, 100))
+    torch_frames[2] = display.newSpriteFrame(torch_images[2], cc.rect(0, 0, 50, 100))
+    torch_frames[3] = display.newSpriteFrame(torch_images[3], cc.rect(0, 0, 50, 100))
+    local animation_time = 0.2
+    local animation = display.newAnimation(torch_frames, animation_time)
+    display.setAnimationCache(torch_motion, animation)
+
+    local torch_images = {}
+    torch_images[1] = display.loadImage("background/torch.png")
+    local torch_frames = {}
+    torch_frames[1] = display.newSpriteFrame(torch_images[1], cc.rect(0, 0, 50, 100))
+    local animation_time = 0.2
+    local animation = display.newAnimation(torch_frames, animation_time)
+    display.setAnimationCache(torch_motion_morning, animation)
 end
 
 function SecondScene:make_minion(name, id, x, y)
@@ -254,6 +282,7 @@ function SecondScene:detect_torch(i)
                 self.torches[i].position.x - self.m_character.position.x > display.cx + 8 * self.f_width or
                 self.torches[i].position.y - self.m_character.position.y < 0.0 - display.cy - 7 * self.f_height or
                 self.torches[i].position.y - self.m_character.position.y > display.cy + 7 * self.f_height then
+            self.torches[i].sprite:stopAllActions()
             self.torches[i].sprite:removeFromParentAndCleanup(true)
             self.torches[i].sprite = nil
         end
@@ -274,6 +303,7 @@ function SecondScene:detect_torch(i)
             end
             if self.light_status == NIGHT then
                 local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
+                self.torches[i].sprite:playAnimationForever(display.getAnimationCache(torch_motion))
                 self.torches[i].sprite:setGLProgram(night_char)
             end
         end
@@ -472,6 +502,10 @@ local function enter_dawn(self)
     self.m_character.sprite:setGLProgram(dawn_char)
     for i, single_torch in pairs(self.torches) do
         if self.torches[i].sprite ~= nil then
+            if self.light_status == DAWN then
+                self.torches[i].sprite:stopAllActions()
+                self.torches[i].sprite:setSpriteFrame(display.getAnimationCache(torch_motion_morning):getFrames()[1]:getSpriteFrame())
+            end
             self.torches[i].sprite:setGLProgram(dawn_char)
         end
     end
@@ -519,52 +553,47 @@ local function enter_night(self)
         end
     end
     self.m_character.sprite:setGLProgram(night_char)
-    local lights = {}
-    local lights_num = 0
     for i, single_torch in pairs(self.torches) do
         if self.torches[i].sprite ~= nil then
+            self.torches[i].sprite:stopAllActions()
+            self.torches[i].sprite:playAnimationForever(display.getAnimationCache(torch_motion))
             self.torches[i].sprite:setGLProgram(night_char)
-            lights_num = lights_num + 1
-            lights[lights_num] = cc.p(math.floor((self.torches[i].position.x - self.m_character.position.x) + display.cx), math.floor((self.torches[i].position.y - self.m_character.position.y + 50) + display.cy))
         end
     end
 
     self.structs_roof:setGLProgram(night_back)
     self.structs_wall:setGLProgram(night_back)
     local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
-    gl_state:setUniformInt("lights_num", lights_num)
-    for i, single_light in pairs(lights) do
-        gl_state:setUniformVec2("light"..(i-1), single_light)
-    end
-
     local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
-    gl_state:setUniformInt("lights_num", lights_num)
-    for i, single_light in pairs(lights) do
-        gl_state:setUniformVec2("light"..(i-1), single_light)
-    end
 end
 
 function SecondScene:step(dt)
-    --self.olo:setString(math.floor(self.m_character.position.x).." "..math.floor(self.m_character.position.y))
     self.time = self.time + dt
     if self.light_status == DAWN and self.time >= DAWN_TIME then
-        enter_day(self)
         self.light_status = DAY
+        enter_day(self)
     end
     if self.light_status == DAY and self.time >= DAY_TIME + DAWN_TIME then
-        enter_dawn(self)
         self.light_status = TWILIGHT
+        enter_dawn(self)
     end
     if self.light_status == TWILIGHT and self.time >= DAY_TIME + DAWN_TIME + DAWN_TIME then
-        enter_night(self)
         self.light_status = NIGHT
+        enter_night(self)
     end
     if self.light_status == NIGHT and self.time >= DAY_TIME + DAWN_TIME + DAWN_TIME + NIGHT_TIME then
-        enter_dawn(self)
         self.light_status = DAWN
         self.time = 0.0
+        enter_dawn(self)
     end
     if self.light_status == NIGHT then
+        self.light_timer = self.light_timer + dt
+        if self.light_timer > LIGHT_TIMER and self.light_timer < 2 * LIGHT_TIMER then
+            self.light_radius = 61000.0
+        elseif self.light_timer > 2 * LIGHT_TIMER then
+            self.light_timer = 0
+            self.light_radius = 60000.0
+        end
         local lights = {}
         local lights_num = 0
         for i, single_torch in pairs(self.torches) do
@@ -576,6 +605,7 @@ function SecondScene:step(dt)
 
         local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
         local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
+        gl_state:setUniformFloat("radius", self.light_radius * self.screen_ratio.x)
         gl_state:setUniformInt("lights_num", lights_num)
         for i, single_light in pairs(lights) do
             gl_state:setUniformVec2("light"..(i-1), single_light)
@@ -583,6 +613,7 @@ function SecondScene:step(dt)
 
         local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
         local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
+        gl_state:setUniformFloat("radius", self.light_radius * self.screen_ratio.x)
         gl_state:setUniformInt("lights_num", lights_num)
         for i, single_light in pairs(lights) do
             gl_state:setUniformVec2("light"..(i-1), single_light)
@@ -637,8 +668,6 @@ function SecondScene:step(dt)
         end
     end
     if self.map_move_flag ~= STOP then
-        --self.structs_roof:move(display.cx - self.m_character.position.x + self.width / 2, display.cy - self.m_character.position.y + self.width / 2)
-        --self.structs_wall:move(display.cx - self.m_character.position.x + self.width / 2, display.cy - self.m_character.position.y + self.width / 2)
         self.map:move(display.cx - self.m_character.position.x, display.cy - self.m_character.position.y)
     elseif self.m_character.last_act ~= STOP then
         self.m_character.sprite:stopAllActions()
@@ -665,8 +694,8 @@ function SecondScene:create_collision_test(i, loc_x, loc_y)
     self.structs[i].in_vision = true
     local x, y = self.structs_wall:getPosition()
     self.structs[i].walls = cc.TMXTiledMap:create("background/collision_test.tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_wall)
     self.structs[i].map = cc.p(self.structs[i].walls:getMapSize().width, self.structs[i].walls:getMapSize().height)
     self.structs[i].tile = cc.p(self.structs[i].walls:getTileSize().width, self.structs[i].walls:getTileSize().height)
     for m = 0, self.structs[i].map.x - 1 do
@@ -688,22 +717,22 @@ function SecondScene:create_lb(i, lb_name, loc_x, loc_y)
     self.structs[i].in_vision = true
     local x, y = self.structs_roof:getPosition()
     self.structs[i].roofs = cc.TMXTiledMap:create("background/"..self.structs[i].name.."_roofs.tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_roof)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_roof)
     self.structs[i].walls = cc.TMXTiledMap:create("background/"..self.structs[i].name.."_walls.tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_wall)
     local layer = self.structs[i].walls:layerNamed("collision")
     layer:setVisible(false)
     self.structs[i].room1 = cc.TMXTiledMap:create("background/"..self.structs[i].name.."_room1.tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_wall)
     local layer = self.structs[i].room1:layerNamed("collision")
     layer:setVisible(false)
     self.structs[i].room1:setVisible(false)
     self.structs[i].room2 = cc.TMXTiledMap:create("background/"..self.structs[i].name.."_room2.tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_wall)
     local layer = self.structs[i].room2:layerNamed("collision")
     layer:setVisible(false)
     self.structs[i].room2:setVisible(false)
@@ -728,8 +757,8 @@ function SecondScene:create_farm(i, farm_name, loc_x, loc_y)
     self.structs[i].in_vision = true
     local x, y = self.structs_wall:getPosition()
     self.structs[i].walls = cc.TMXTiledMap:create("background/"..self.structs[i].name..".tmx")
-        :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(x + self.structs[i].position.x - display.cx - self.width / 2, y - display.cy + self.structs[i].position.y - self.height / 2)
+    :addTo(self.structs_wall)
     local layer = self.structs[i].walls:layerNamed("collision")
     layer:setVisible(false)
     self.structs[i].map = cc.p(self.structs[i].walls:getMapSize().width, self.structs[i].walls:getMapSize().height)
@@ -746,12 +775,6 @@ function SecondScene:create_farm(i, farm_name, loc_x, loc_y)
     self.structs[i].plants = plants:new()
     self.structs[i].plants:init_plants(self.structs[i], self.structs_wall, self.width, self.height)
 end
-
---[[
-function SecondScene:draw(renderer, transform, flags)
-    --self.olo:setString("here")
-end
-]]
 
 function SecondScene:onCreate()
     local playButton = cc.MenuItemImage:create("PlayButton.png", "PlayButton.png")
@@ -776,14 +799,14 @@ function SecondScene:onCreate()
     self.height = MAP_Y * self.f_height
 
     self.structs_wall = display.newSprite()
-        :move(display.cx, display.cy)
-        :addTo(self, 1)
+    :move(display.cx, display.cy)
+    :addTo(self, 1)
     self.structs_roof = display.newSprite()
-        :move(display.cx, display.cy)
-        :addTo(self, 50)
+    :move(display.cx, display.cy)
+    :addTo(self, 50)
     self.map = cc.TMXTiledMap:create("background/background.tmx")
-        :move(display.cx - self.width / 2, display.cy - self.height / 2)
-        :addTo(self.structs_wall)
+    :move(display.cx - self.width / 2, display.cy - self.height / 2)
+    :addTo(self.structs_wall)
 
     self.map_characters = {}
     for i = 1, MAP_X do
@@ -822,10 +845,10 @@ function SecondScene:onCreate()
     self:create_lb(4, "lb1", -100, -350)
 
     self.m_character = character:new()
-    self:init_minion_frame(self)
+    self:init_minion_frame()
     local frame = display.getAnimationCache(minion_motions[DOWN]):getFrames()[2]
     self.m_character.sprite = display.newSprite(frame:getSpriteFrame())
-        :addTo(self.c_node, math.floor(display.cy))
+    :addTo(self.c_node, math.floor(display.cy))
     self.m_character:set_map_characters(self.map_characters, 0, self.minions, self.m_character)
     self.m_character:set_position(self.width / 2, self.height / 2)
     self.m_character:change_position(0.0, 0.0, self.width / 2, self.height / 2)
@@ -913,40 +936,28 @@ function SecondScene:onCreate()
     self.time = DAWN_TIME
     self.light_status = DAY
 
+    self:init_torch_frame()
     local x, y = self.c_node:getPosition()
     self.torches[1] = torch:new()
     self.torches[1].position = cc.p(-100 + self.width / 2, 100 + self.height / 2)
     self.torches[1].sprite = display.newSprite("background/torch.png")
-        :move(self.torches[1].position.x - self.m_character.position.x + display.cx, self.torches[1].position.y - self.m_character.position.y + display.cy + 40)
-        :addTo(self.c_node, math.floor(display.top - (self.torches[1].position.y - self.m_character.position.y + display.cy)))
+    :move(self.torches[1].position.x - self.m_character.position.x + display.cx, self.torches[1].position.y - self.m_character.position.y + display.cy + 60)
+    :addTo(self.c_node, math.floor(display.top - (self.torches[1].position.y - self.m_character.position.y + display.cy)))
     self.torches[2] = torch:new()
     self.torches[2].position = cc.p(-700 + self.width / 2, 100 + self.height / 2)
     self.torches[2].sprite = display.newSprite("background/torch.png")
-        :move(self.torches[2].position.x - self.m_character.position.x + display.cx, self.torches[2].position.y - self.m_character.position.y + display.cy + 40)
-        :addTo(self.c_node, math.floor(display.top - (self.torches[2].position.y - self.m_character.position.y + display.cy)))
+    :move(self.torches[2].position.x - self.m_character.position.x + display.cx, self.torches[2].position.y - self.m_character.position.y + display.cy + 60)
+    :addTo(self.c_node, math.floor(display.top - (self.torches[2].position.y - self.m_character.position.y + display.cy)))
     self.torches[3] = torch:new()
     self.torches[3].position = cc.p(-100 + self.width / 2, 1300 + self.height / 2)
     self.torches[3].sprite = display.newSprite("background/torch.png")
-        :move(self.torches[3].position.x - self.m_character.position.x + display.cx, self.torches[3].position.y - self.m_character.position.y + display.cy + 40)
-        :addTo(self.c_node, math.floor(display.top - (self.torches[3].position.y - self.m_character.position.y + display.cy)))
+    :move(self.torches[3].position.x - self.m_character.position.x + display.cx, self.torches[3].position.y - self.m_character.position.y + display.cy + 60)
+    :addTo(self.c_node, math.floor(display.top - (self.torches[3].position.y - self.m_character.position.y + display.cy)))
     local screen_size = cc.Director:getInstance():getWinSize()
     local frame_size = cc.Director:getInstance():getOpenGLView():getFrameSize()
-    --cc.Director:getInstance():getOpenGLView():setFrameZoomFactor(screen_size["height"] / frame_size["height"] / cc.Director:getInstance():getOpenGLView():getRetinaFactor())
     cc.Director:getInstance():getOpenGLView():setDesignResolutionSize(screen_size["width"], screen_size["height"], cc.ResolutionPolicy.SHOW_ALL)
-    --local design_size = cc.Director:getInstance():getOpenGLView():getDesignResolutionSize()
-    --local origin = cc.Director:getInstance():getOpenGLView():getVisibleOrigin()
-    --local visible_size = cc.Director:getInstance():getVisibleSize()
 
-    --self.screen_ratio = cc.p(screen_size["width"]/frame_size["width"], screen_size["height"]/frame_size["height"])
     self.screen_ratio = cc.p(frame_size["width"]/screen_size["width"], frame_size["height"]/screen_size["height"])
-    --self.shader_ratio = cc.p(screen_size["width"]/visible_size["width"], screen_size["height"]/visible_size["height"])
-    --self.olo:setString(frame_size["width"]..""..frame_size["height"])
-    --self.olo:setString(screen_size["width"]..""..screen_size["height"])
-    --self.olo:setString(frame_size["width"]..""..frame_size["height"])
-    --self.olo:setString(self.screen_ratio.x..""..self.screen_ratio.y)
-    --self.olo:setString(origin.x.." "..origin.y)
-    --self.olo:setString(design_size["width"].." "..design_size["height"])
-    --self.olo:setString(visible_size["width"].." "..visible_size["height"])
 
     local day_back = cc.GLProgram:createWithFilenames("background/back.vsh", "background/day.fsh")
     day_back:bindAttribLocation(cc.ATTRIBUTE_NAME_POSITION,cc.VERTEX_ATTRIB_POSITION)

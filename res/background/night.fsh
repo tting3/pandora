@@ -11,6 +11,7 @@ uniform vec2 light2;
 uniform vec2 light3;
 uniform vec2 light4;
 uniform int lights_num;
+uniform float radius;
 
 void main()
 {
@@ -20,7 +21,7 @@ void main()
 		return;
 	}
 	vec2 texcoord = gl_FragCoord.xy;
-	float root = 70000.0;
+	float root = radius;
 	vec2 lights[5];
 	lights[0] = light0;
 	lights[1] = light1;
@@ -34,13 +35,13 @@ void main()
 			root = temp_root;
 		}
 	}
-	if(root < 35000.0){
+	if(root < (radius / 2.0)){
 		float gray = dot(v_orColor.rgb,vec3(0.299,0.587,0.114))*0.56;
-		gl_FragColor = vec4(v_orColor.r*0.44+gray-0.588*root/70000.0,v_orColor.g*0.44+gray-0.588*root/70000.0,v_orColor.b*0.44+gray-0.588*root/70000.0,v_orColor.a);
+		gl_FragColor = vec4(v_orColor.r*0.44+gray-0.588*root/radius,v_orColor.g*0.44+gray-0.588*root/radius,v_orColor.b*0.44+gray-0.588*root/radius,v_orColor.a);
 	}
-	else if(root < 70000.0){
+	else if(root < radius){
 		float gray = dot(v_orColor.rgb,vec3(0.299,0.587,0.114))*0.58;
-		gl_FragColor = vec4(v_orColor.r*0.42+gray-0.588*root/70000.0,v_orColor.g*0.42+gray-0.588*root/70000.0,v_orColor.b*0.42+gray-0.588*root/70000.0,v_orColor.a);
+		gl_FragColor = vec4(v_orColor.r*0.42+gray-0.588*root/radius,v_orColor.g*0.42+gray-0.588*root/radius,v_orColor.b*0.42+gray-0.588*root/radius,v_orColor.a);
 	}
 	else{
 		float gray = dot(v_orColor.rgb,vec3(0.299,0.587,0.114))*0.6;
