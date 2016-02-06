@@ -31,20 +31,21 @@ function TableViewLayer.cellSizeForTable(table,idx)
 end
 
 function TableViewLayer.tableCellAtIndex(table, idx)
-    --local cell = table:dequeueCell()
-    --if cell == nil then
     local cell = cc.TableViewCell:new()
     local table_bg = display.newSprite("block.png")
     table_bg:setAnchorPoint(cc.p(0, 0))
     table_bg:setPosition(cc.p(0, 0))
     cell:addChild(table_bg)
-
+    local item_bg = display.newSprite("sword.png")
+    item_bg:setAnchorPoint(cc.p(0, 0))
+    item_bg:setPosition(cc.p(0, 0))
+    cell:addChild(item_bg)
+    --[[
     local label = cc.Label:createWithSystemFont(idx.."", "", 30)
     label:setAnchorPoint(cc.p(0.0, 0.0))
     label:setPosition(cc.p(0.0, 0.0))
     cell:addChild(label)
-    --end
-
+    ]]
     return cell
 end
 
