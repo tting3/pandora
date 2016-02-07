@@ -10,8 +10,8 @@ local TableViewLayer = class("TableViewLayer", function()
     return display.newLayer()
 end)
 
-function TableViewLayer:ctor(bounceable)
-    self:onEnter(bounceable)
+function TableViewLayer:ctor(bounceable, new_elements, x, y, size, item_size, direction, order)
+    self:onEnter(bounceable, new_elements, x, y, size, item_size, direction, order)
 end
 
 function TableViewLayer.scrollViewDidScroll(view)
@@ -27,49 +27,56 @@ function TableViewLayer.tableCellTouched(table, cell)
 end
 
 function TableViewLayer.cellSizeForTable(table,idx)
-    return 400,50
+    return table.item_size.x, table.item_size.y
 end
 
 function TableViewLayer.tableCellAtIndex(table, idx)
     local cell = cc.TableViewCell:new()
-    local table_bg = display.newSprite("block.png")
-    table_bg:setAnchorPoint(cc.p(0, 0))
-    table_bg:setPosition(cc.p(0, 0))
-    cell:addChild(table_bg)
-    local item_bg = display.newSprite("sword.png")
-    item_bg:setAnchorPoint(cc.p(0, 0))
-    item_bg:setPosition(cc.p(0, 0))
-    cell:addChild(item_bg)
-    --[[
-    local label = cc.Label:createWithSystemFont(idx.."", "", 30)
-    label:setAnchorPoint(cc.p(0.0, 0.0))
-    label:setPosition(cc.p(0.0, 0.0))
-    cell:addChild(label)
-    ]]
+    if table.elements[idx+1].back ~= nil then
+        local table_bg = display.newSprite(table.elements[idx+1].back)
+        table_bg:setAnchorPoint(cc.p(0, 0))
+        table_bg:setPosition(cc.p(0, 0))
+        cell:addChild(table_bg)
+    end
+    if table.elements[idx+1].item ~= nil then
+        local item_bg = display.newSprite(table.elements[idx+1].item)
+        item_bg:setAnchorPoint(cc.p(0, 0))
+        item_bg:setPosition(cc.p(0, 0))
+        cell:addChild(item_bg)
+    end
     return cell
 end
 
-function TableViewLayer.numberOfCellsInTableView(table)
-    return 20
+function TableViewLayer.numberOfCellsInTableView(TABLE)
+    return table.getn(TABLE.elements)
 end
 
-function TableViewLayer:onEnter(bounceable)
-    local table_view = cc.TableView:create(cc.size(400, 400))
-    table_view:setAnchorPoint(cc.p(0, 0))
-    table_view:setDirection(kCCScrollViewDirectionVertical)
-    table_view:move(300, 100)
-    table_view:setBounceable(bounceable)
-    table_view:setTouchEnabled(true)
-    table_view:setDelegate()
-    self:addChild(table_view)
-    table_view:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN) --kCCTableViewFillBottomUp
-    table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)
-    table_view:registerScriptHandler(self.scrollViewDidZoom,CCTableView.kTableViewZoom)
-    table_view:registerScriptHandler(self.tableCellTouched,CCTableView.kTableCellTouched)
-    table_view:registerScriptHandler(self.cellSizeForTable,CCTableView.kTableCellSizeForIndex)
-    table_view:registerScriptHandler(self.tableCellAtIndex,CCTableView.kTableCellSizeAtIndex)
-    table_view:registerScriptHandler(self.numberOfCellsInTableView,CCTableView.kNumberOfCellsInTableView)
-    table_view:reloadData()
+function TableViewLayer:onEnter(bounceable, new_elements, x ,y, size, item_size, direction, order)
+    self.elements = {}
+    for i, element in pairs(new_elements) do
+        self.elements[i] = {}
+        self.elements[i].back = element.back
+        self.elements[i].item = element.item
+    end
+    self.item_size = item_size
+    self.table_view = cc.TableView:create(size)
+    self.table_view:setAnchorPoint(cc.p(0, 0))
+    self.table_view:setDirection(direction)
+    self.table_view:move(x, y)
+    self.table_view:setBounceable(bounceable)
+    self.table_view:setTouchEnabled(true)
+    self.table_view:setDelegate()
+    self.table_view.elements = self.elements
+    self.table_view.item_size = self.item_size
+    self:addChild(self.table_view)
+    self.table_view:setVerticalFillOrder(order) --kCCTableViewFillBottomUp
+    self.table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)
+    self.table_view:registerScriptHandler(self.scrollViewDidZoom,CCTableView.kTableViewZoom)
+    self.table_view:registerScriptHandler(self.tableCellTouched,CCTableView.kTableCellTouched)
+    self.table_view:registerScriptHandler(self.cellSizeForTable,CCTableView.kTableCellSizeForIndex)
+    self.table_view:registerScriptHandler(self.tableCellAtIndex,CCTableView.kTableCellSizeAtIndex)
+    self.table_view:registerScriptHandler(self.numberOfCellsInTableView,CCTableView.kNumberOfCellsInTableView)
+    self.table_view:reloadData()
 end
 
 return TableViewLayer
