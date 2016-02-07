@@ -45,7 +45,7 @@ local thief = {
             end
             return -1
         end
-        if minions[index].height_level < minions[c_index].height_level then
+        if minions[index].height_level < minions[c_index].height_level or c_index == index then
             return -1
         end
         for i, target in pairs(self.targets_list) do
@@ -72,6 +72,11 @@ local thief = {
         local j = minions[index].position.y / 50.0
         i = math.floor(i) + 1
         j = math.floor(j) + 1
+        local result
+        result = self:check_block(m_character, minions, index, i, j)
+        if result ~= -1 then
+            return result
+        end
         local dis
         for dis = 1, sight do
             local check_i

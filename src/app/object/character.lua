@@ -20,13 +20,10 @@ local character = {
     position = cc.p(0.0, 0.0),
     name = "",
     name_txt = nil,
-    hp = 100,
-    hunger = 0,
     asleep = false,
     sprite = nil,
     animated = false,
     last_act = DOWN,
-    id = identity.free_folk,
     logic = nil,
     dir = STOP,
     last_act = STOP,
@@ -36,7 +33,13 @@ local character = {
     m_character = nil,
     last_map_index = -1,
     index = 0,
+    id = identity.free_folk,
+    hp = 100,
+    hunger = 0,
     inventory = {},
+    left_hand = nil,
+    right_hand = nil,
+    armor = nil,
     set_position = function(self, x, y)
         self.position = cc.p(x, y)
     end,
@@ -184,7 +187,7 @@ local character = {
             end
             self.name_txt = cc.Label:createWithSystemFont(self.name, font.GREEK_FONT, 20)
                 :setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-                :setAnchorPoint(anchor_x, -2.2)
+                :setAnchorPoint(anchor_x, -1.5)
                 :setTextColor(font.BLACK)
                 :addTo(self.sprite)
         end
@@ -245,13 +248,10 @@ function character:new(o)
     o.position = cc.p(0.0, 0.0)
     o.name = ""
     o.name_txt = nil
-    o.hp = 100
-    o.hunger = 0
     o.asleep = false
     o.sprite = nil
     o.animated = false
     o.last_act = DOWN
-    o.id = identity.free_folk
     o.logic = nil
     o.dir = STOP
     o.height_level = 0
@@ -259,7 +259,10 @@ function character:new(o)
     o.minions = nil
     o.m_character = nil
     o.last_map_index = -1
+    o.id = identity.free_folk
     o.index = 0
+    o.hp = 100
+    o.hunger = 0
     o.inventory = {}
     return o
 end

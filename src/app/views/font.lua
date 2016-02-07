@@ -9,7 +9,7 @@
 local font = {
     YELLOW = cc.c3b(230, 214, 44),
     BLACK = cc.c3b(0, 0, 0),
-    GREEK_FONT = "font/greek to me.ttf"
+    GREEK_FONT = "font/DIOGENES.ttf"
 }
 
 return font

@@ -6,19 +6,11 @@
 -- To change this template use File | Settings | File Templates.
 --
 
---
--- Created by IntelliJ IDEA.
--- User: wzl
--- Date: 12/30/2015
--- Time: 6:58 AM
--- To change this template use File | Settings | File Templates.
---
-
 local SecondScene = class("SecondScene", cc.load("mvc").ViewBase)
 
-local DAY_TIME = 1.0
-local DAWN_TIME = 1.0
-local NIGHT_TIME = 10.0
+local DAY_TIME = 120.0
+local DAWN_TIME = 10.0
+local NIGHT_TIME = 100.0
 local DAWN = 0
 local DAY = 1
 local TWILIGHT = 2
@@ -53,40 +45,6 @@ local identity = require("app.logic.identity")
 local minion_logic = require("app.logic.minion_logic")
 local fixedDeltaTimeScale = 60.0
 
-SecondScene.minions = {}
-SecondScene.torches = {}
-SecondScene.minion_size = 1
-SecondScene.m_character = {}
-SecondScene.screen_ratio = cc.p(1.0, 1.0)
---SecondScene.shader_ratio = cc.p(1.0, 1.0)
-SecondScene.width = 0.0
-SecondScene.height = 0.0
-SecondScene.f_width = 0.0
-SecondScene.f_height = 0.0
-SecondScene.time = DAWN_TIME
-SecondScene.light_status = DAY
-SecondScene.light_radius = 60000.0
-SecondScene.light_timer = 0.0
-SecondScene.day_back = nil
-SecondScene.day_char = nil
-SecondScene.dawn_back = nil
-SecondScene.dawn_char = nil
-SecondScene.night_back = nil
-SecondScene.night_char = nil
-SecondScene.map = {}
-SecondScene.map_move_flag = STOP
-SecondScene.map_build_index = {}
-SecondScene.map_characters = {}
-SecondScene.touch_layer = {}
-SecondScene.olo = {}
-SecondScene.resources = {}
-SecondScene.resources_50 = {}
-SecondScene.structs_roof = {}
-SecondScene.structs_wall = {}
-SecondScene.structs = {}
-SecondScene.c_node = {}
---SecondScene.slow_down = 0
-
 function SecondScene:init_minion_frame()
     local minion_image = display.loadImage("character/free_folk.png")
     local frameWidth = minion_image:getPixelsWide() / 4
@@ -102,16 +60,34 @@ function SecondScene:init_minion_frame()
         display.setAnimationCache(minion_motion, animation)
     end
     self.minion_size = 1
+    local names = cc.FileUtils:getInstance():getStringFromFile("res/character/names")
+    local num_names = string.len(names) / 5
+    math.randomseed(os.time())
+    local offset = math.random(num_names)
+    local name_table = {}
+    for i = 0, num_names - 1 do
+        name_table[i + 1] = string.sub(names, (i % num_names) * 5 + 1, (i % num_names) * 5 + 4)
+    end
+    local iterations = table.getn(name_table)
+    local j
+    for i = iterations, 2, -1 do
+        j = math.random(i)
+        name_table[i], name_table[j] = name_table[j], name_table[i]
+    end
     local a = 2
     local b = 1
+    local c = 20
     for i = 0, a do
-        self:make_minion("John"..(i+1), identity.slave_farm, 250+i*10, -40)
+        self:make_minion(name_table[i + 1], identity.slave_farm, 250+i*30, -40)
         self.minions[i+1].logic:farm_init(self.structs)
         self.minions[i+1].logic:sleep_init(self.structs)
     end
     for i = 0, b do
-        self:make_minion("Jack"..(i+1), identity.free_folk, -150-i*10, 50)
+        self:make_minion(name_table[i + a + 1], identity.free_folk, -150-i*30, 50)
         self.minions[a+i+2].logic:thief_init({1, 2, 3, 4})
+    end
+    for i = 0, c do
+        self:make_minion(name_table[i + a + b + 1], identity.slave_dispose, -150-i*5, 50)
     end
 end
 
@@ -144,7 +120,7 @@ function SecondScene:make_minion(name, id, x, y)
     self.minions[self.minion_size]:set_map_characters(self.map_characters, self.minion_size, self.minions, self.m_character)
     self.minions[self.minion_size]:set_position(self.width / 2 + x, self.height / 2 + y)
     self.minions[self.minion_size]:change_position(0.0, 0.0, self.width / 2, self.height / 2)
-    self.minions[self.minion_size]:set_name(name, 0.0)
+    self.minions[self.minion_size]:set_name(name, -0.2)
     self.minions[self.minion_size]:set_id(id)
     self.minions[self.minion_size]:add_shadow()
     self.minion_size = self.minion_size + 1
@@ -373,7 +349,7 @@ function SecondScene:detect_minion(i)
                 local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
                 self.minions[i].sprite:setGLProgram(night_char)
             end
-            self.minions[i]:set_name(self.minions[i].name, 0.0)
+            self.minions[i]:set_name(self.minions[i].name, -0.2)
             self.minions[i].animated = false
             self.minions[i]:add_shadow()
             self.c_node:reorderChild(self.minions[i].sprite, math.floor(display.top - (self.minions[i].position.y - self.m_character.position.y + display.cy)))
@@ -511,6 +487,53 @@ local function enter_dawn(self)
     end
 end
 
+function SecondScene:m_check_surroundings()
+    local i = self.m_character.position.x / 50.0
+    local j = self.m_character.position.y / 50.0
+    i = math.floor(i) + 1
+    j = math.floor(j) + 1
+    local characters = {}
+    for ii = i - 1, i + 1 do
+        for jj = j - 1, j + 1 do
+            if self.map_characters[ii][jj][1] ~= 0 then
+                for index = 2, self.map_characters[ii][jj][1] + 1 do
+                    if self.map_characters[ii][jj][index] ~= 0 then
+                        characters[#characters + 1] = self.map_characters[ii][jj][index]
+                    end
+                end
+            end
+        end
+    end
+    local m_interactions_change_flag = false
+    if #self.last_character_interactions ~= #characters then
+        m_interactions_change_flag = true
+    elseif #characters ~= 0 then
+        for ii = 1, #characters do
+            if self.last_character_interactions[ii] ~= characters[ii] then
+                m_interactions_change_flag = true
+            end
+        end
+    end
+    if m_interactions_change_flag == true then
+        self.interactions.elements = {}
+        self.last_character_interactions = {}
+        for ii, character in pairs(characters) do
+            self.interactions.elements[ii] = {}
+            self.interactions.elements[ii].back = "object/character_interaction.png"
+            self.interactions.elements[ii].item = nil
+            self.interactions.elements[ii].label = self.minions[character].name
+            self.last_character_interactions[ii] = character
+        end
+        self.interactions.table_view.elements = self.interactions.elements
+        if #characters <= 8 then
+            self.interactions.table_view:move(display.right - (#characters)*75, 0)
+        else
+            self.interactions.table_view:move(display.right - 75*6, 0)
+        end
+        self.interactions.table_view:reloadData()
+    end
+end
+
 local function enter_night(self)
     local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
     local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
@@ -589,7 +612,7 @@ function SecondScene:step(dt)
     if self.light_status == NIGHT then
         self.light_timer = self.light_timer + dt
         if self.light_timer > LIGHT_TIMER and self.light_timer < 2 * LIGHT_TIMER then
-            self.light_radius = 61000.0
+            self.light_radius = 61500.0
         elseif self.light_timer > 2 * LIGHT_TIMER then
             self.light_timer = 0
             self.light_radius = 60000.0
@@ -674,6 +697,8 @@ function SecondScene:step(dt)
         self.m_character.sprite:setSpriteFrame(display.getAnimationCache(minion_motions[self.m_character.last_act]):getFrames()[1]:getSpriteFrame())
         self.m_character.last_act = STOP
     end
+
+    self:m_check_surroundings()
 
     for i, minion in pairs(self.minions) do
         self.minions[i].logic:think_about_life(self.m_character, self.minions, self.structs, self.light_status, self.map_build_index, i, dt)
@@ -777,6 +802,38 @@ function SecondScene:create_farm(i, farm_name, loc_x, loc_y)
 end
 
 function SecondScene:onCreate()
+    self.minions = {}
+    self.torches = {}
+    self.minion_size = 1
+    self.m_character = {}
+    self.screen_ratio = cc.p(1.0, 1.0)
+    self.width = 0.0
+    self.height = 0.0
+    self.f_width = 0.0
+    self.f_height = 0.0
+    self.time = DAWN_TIME
+    self.light_status = DAY
+    self.light_radius = 60000.0
+    self.light_timer = 0.0
+    self.day_back = nil
+    self.day_char = nil
+    self.dawn_back = nil
+    self.dawn_char = nil
+    self.night_back = nil
+    self.night_char = nil
+    self.map = {}
+    self.map_move_flag = STOP
+    self.map_build_index = {}
+    self.map_characters = {}
+    self.touch_layer = {}
+    self.olo = {}
+    self.resources = {}
+    self.resources_50 = {}
+    self.structs_roof = {}
+    self.structs_wall = {}
+    self.structs = {}
+    self.c_node = {}
+    self.last_character_interactions = {}
     local playButton = cc.MenuItemImage:create("PlayButton.png", "PlayButton.png")
     :onClicked(function()
         self:getApp():enterScene("MainScene")
@@ -852,7 +909,7 @@ function SecondScene:onCreate()
     self.m_character:set_map_characters(self.map_characters, 0, self.minions, self.m_character)
     self.m_character:set_position(self.width / 2, self.height / 2)
     self.m_character:change_position(0.0, 0.0, self.width / 2, self.height / 2)
-    self.m_character:set_name("Pandora", 0.2)
+    self.m_character:set_name("Pandora", 0.1)
     self.m_character:add_shadow()
 
     local touch_layer = display.newLayer()
@@ -933,6 +990,12 @@ function SecondScene:onCreate()
     display.newSprite("right.png")
     :move(display.left + 175, display.bottom + 57.5)
     :addTo(touch_layer)
+
+    self.interactions = require("app.views.interactions").new(true, {}, display.right, 0, cc.size(75*6, 75), cc.p(75, 75), kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown)
+    self.interactions:setAnchorPoint(cc.p(0, 0))
+    self.interactions:setPosition(cc.p(0, 0))
+    self:addChild(self.interactions, 100)
+
     self.time = DAWN_TIME
     self.light_status = DAY
 
