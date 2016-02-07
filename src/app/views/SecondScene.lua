@@ -68,7 +68,7 @@ function SecondScene:init_minion_frame()
     for i = 0, num_names - 1 do
         name_table[i + 1] = string.sub(names, (i % num_names) * 5 + 1, (i % num_names) * 5 + 4)
     end
-    local iterations = table.getn(name_table)
+    local iterations = #name_table
     local j
     for i = iterations, 2, -1 do
         j = math.random(i)
@@ -83,11 +83,11 @@ function SecondScene:init_minion_frame()
         self.minions[i+1].logic:sleep_init(self.structs)
     end
     for i = 0, b do
-        self:make_minion(name_table[i + a + 1], identity.free_folk, -150-i*30, 50)
+        self:make_minion(name_table[i + a + 2], identity.free_folk, -150-i*30, 50)
         self.minions[a+i+2].logic:thief_init({1, 2, 3, 4})
     end
     for i = 0, c do
-        self:make_minion(name_table[i + a + b + 1], identity.slave_dispose, -150-i*5, 50)
+        self:make_minion(name_table[i + a + b + 3], identity.slave_dispose, -150-i*5, 50)
     end
 end
 
