@@ -24,6 +24,7 @@ local LEFT = 1
 local RIGHT = 2
 local UP = 3
 local speed = 2.0
+local interaction_pop_speed = 5.0
 
 local minion_motions = {}
 minion_motions[DOWN] = "MINION_DOWN"
@@ -376,7 +377,6 @@ function SecondScene:detect_minion(i)
 end
 
 function SecondScene:stop()
-    --self.touch_layer:unregisterScriptTouchHandler(cc.Handler.EVENT_TOUCH_BEGAN)
     self:unscheduleUpdate()
     return self
 end
@@ -487,6 +487,11 @@ local function enter_dawn(self)
     end
 end
 
+function SecondScene:interaction_press_call_back(index)
+    release_print("cell at "..index)
+
+end
+
 function SecondScene:m_check_surroundings()
     local i = self.m_character.position.x / 50.0
     local j = self.m_character.position.y / 50.0
@@ -504,17 +509,41 @@ function SecondScene:m_check_surroundings()
             end
         end
     end
-    local m_interactions_change_flag = false
-    if #self.last_character_interactions ~= #characters then
-        m_interactions_change_flag = true
-    elseif #characters ~= 0 then
-        for ii = 1, #characters do
-            if self.last_character_interactions[ii] ~= characters[ii] then
-                m_interactions_change_flag = true
+    local objects = {}
+    local build_index = self.map_build_index[i][j]
+    if build_index ~= 0 then
+        if self.structs[build_index].functionality == functionality.FARM then
+            if self.m_character.height_level == 0 then
+                local temp_i = math.floor((self.m_character.position.x - self.structs[build_index].position.x) / self.structs[build_index].tile.x)
+                local temp_j = self.structs[build_index].map.y - 1 - math.floor((self.m_character.position.y - self.structs[build_index].position.y) / self.structs[build_index].tile.y)
+                if self.structs[build_index].plants:check_plant(temp_i, temp_j) == true then
+                    objects[#objects + 1] = "object/harvest.png"
+                end
             end
         end
     end
-    if m_interactions_change_flag == true then
+    local interactions_change_flag = false
+    if #self.last_character_interactions ~= #characters then
+        interactions_change_flag = true
+    elseif #characters ~= 0 then
+        for ii = 1, #characters do
+            if self.last_character_interactions[ii] ~= characters[ii] then
+                interactions_change_flag = true
+                break
+            end
+        end
+    end
+    if #self.last_object_interactions ~= #objects then
+        interactions_change_flag = true
+    elseif #objects ~= 0 then
+        for ii = 1, #objects do
+            if self.last_object_interactions[ii] ~= objects[ii] then
+                interactions_change_flag = true
+                break
+            end
+        end
+    end
+    if interactions_change_flag == true then
         self.interactions.elements = {}
         self.last_character_interactions = {}
         for ii, character in pairs(characters) do
@@ -524,13 +553,36 @@ function SecondScene:m_check_surroundings()
             self.interactions.elements[ii].label = self.minions[character].name
             self.last_character_interactions[ii] = character
         end
+        self.last_object_interactions = {}
+        for ii, object in pairs(objects) do
+            self.interactions.elements[ii + #self.last_character_interactions] = {}
+            self.interactions.elements[ii + #self.last_character_interactions].back = "object/object_interaction.png"
+            self.interactions.elements[ii + #self.last_character_interactions].item = object
+            self.interactions.elements[ii + #self.last_character_interactions].label = nil
+            self.last_object_interactions[ii] = object
+        end
         self.interactions.table_view.elements = self.interactions.elements
-        if #characters <= 8 then
-            self.interactions.table_view:move(display.right - (#characters)*75, 0)
+        if (#characters + #objects) <= 6 then
+            self.interactions_position_x = display.right - (#characters + #objects)*75
+            --self.interactions.table_view:move(display.right - (#characters + #objects)*75, 0)
         else
-            self.interactions.table_view:move(display.right - 75*6, 0)
+            self.interactions_position_x = display.right - 6*75
+            --self.interactions.table_view:move(display.right - 75*6, 0)
         end
         self.interactions.table_view:reloadData()
+    end
+    if self.interactions.table_view:getPositionX() < self.interactions_position_x then
+        if self.interactions.table_view:getPositionX() < self.interactions_position_x + 3*interaction_pop_speed then
+            self.interactions.table_view:move(self.interactions.table_view:getPositionX() + 3*interaction_pop_speed, 0)
+        else
+            self.interactions.table_view:move(self.interactions_position_x, 0)
+        end
+    elseif self.interactions.table_view:getPositionX() > self.interactions_position_x then
+        if self.interactions.table_view:getPositionX() > self.interactions_position_x - interaction_pop_speed then
+            self.interactions.table_view:move(self.interactions.table_view:getPositionX() - interaction_pop_speed, 0)
+        else
+            self.interactions.table_view:move(self.interactions_position_x, 0)
+        end
     end
 end
 
@@ -834,6 +886,7 @@ function SecondScene:onCreate()
     self.structs = {}
     self.c_node = {}
     self.last_character_interactions = {}
+    self.last_object_interactions = {}
     local playButton = cc.MenuItemImage:create("PlayButton.png", "PlayButton.png")
     :onClicked(function()
         self:getApp():enterScene("MainScene")
@@ -894,12 +947,12 @@ function SecondScene:onCreate()
 
 
     self:create_lb(1, "lb1", -100, 100)
-    --self:create_collision_test(2, -125, 750)
     --self:create_lb(2, "lb1", -250, 750)
 
     self:create_farm(2, "farm1", -100, 1300)
     self:create_lb(3, "lb1", -550, 100)
     self:create_lb(4, "lb1", -100, -350)
+    --self:create_collision_test(5, -125, 750)
 
     self.m_character = character:new()
     self:init_minion_frame()
@@ -920,22 +973,25 @@ function SecondScene:onCreate()
     listener:registerScriptHandler(
         function(touch, event)
             local x, y = touch:getLocation().x, touch:getLocation().y
-            if x >= 0 and x < 275 and y >= 0 and y < 200 then
-                if x >= 75 and x < 150 and y >= 75 and y < 150 then
-                    self.map_move_flag = UP
-                    return true
-                end
-                if x >= 0 and x < 75 and y >= 0 and y < 75 then
-                    self.map_move_flag = LEFT
-                    return true
-                end
-                if x >= 75 and x < 150 and y >= 0 and y < 75 then
-                    self.map_move_flag = DOWN
-                    return true
-                end
-                if x >= 150 and x < 225 and y >= 0 and y < 75 then
-                    self.map_move_flag = RIGHT
-                    return true
+            if x >= 0 and x < 200 and y >= 0 and y < 200 then
+                if x < 150 and y < 150 then
+                    if x + y <= 150 then
+                        if x <= y then
+                            self.map_move_flag = LEFT
+                            return true
+                        else
+                            self.map_move_flag = DOWN
+                            return true
+                        end
+                    else
+                        if x <= y then
+                            self.map_move_flag = UP
+                            return true
+                        else
+                            self.map_move_flag = RIGHT
+                            return true
+                        end
+                    end
                 end
                 self.map_move_flag = STOP
             end
@@ -945,22 +1001,25 @@ function SecondScene:onCreate()
     listener:registerScriptHandler(
         function(touch, event)
             local x, y = touch:getLocation().x, touch:getLocation().y
-            if x >= 0 and x < 275 and y >= 0 and y < 200 then
-                if x >= 75 and x < 150 and y >= 75 and y < 150 then
-                    self.map_move_flag = UP
-                    return
-                end
-                if x >= 0 and x < 75 and y >= 32.5 and y < 107.5 then
-                    self.map_move_flag = LEFT
-                    return
-                end
-                if x >= 75 and x < 150 and y >= 0 and y < 75 then
-                    self.map_move_flag = DOWN
-                    return
-                end
-                if x >= 150 and x < 225 and y >=32.50 and y < 107.5 then
-                    self.map_move_flag = RIGHT
-                    return
+            if x >= 0 and x < 200 and y >= 0 and y < 200 then
+                if x < 150 and y < 150 then
+                    if x + y <= 150 then
+                        if x <= y then
+                            self.map_move_flag = LEFT
+                            return
+                        else
+                            self.map_move_flag = DOWN
+                            return
+                        end
+                    else
+                        if x <= y then
+                            self.map_move_flag = UP
+                            return
+                        else
+                            self.map_move_flag = RIGHT
+                            return
+                        end
+                    end
                 end
                 self.map_move_flag = STOP
             end
@@ -970,31 +1029,31 @@ function SecondScene:onCreate()
     listener:registerScriptHandler(
         function(touch, event)
             local x, y = touch:getLocation().x, touch:getLocation().y
-            if x >= 0 and x < 275 and y >= 0 and y < 200 then
+            if x >= 0 and x < 200 and y >= 0 and y < 200 then
                 self.map_move_flag = STOP
             end
             return
         end
         ,cc.Handler.EVENT_TOUCH_ENDED)
-    touch_layer:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener,touch_layer)
+    listener:registerScriptHandler(
+        function(touch, event)
+            release_print("cancelled")
+            self.map_move_flag = STOP
+            return
+        end
+        ,cc.Handler.EVENT_TOUCH_CANCELLED)
 
-    display.newSprite("up.png")
-    :move(display.left + 100, display.bottom + 100)
+    local control = display.newSprite("control.png")
+    :setAnchorPoint(0.0, 0.0)
+    :move(display.left, display.bottom)
     :addTo(touch_layer)
-    display.newSprite("left.png")
-    :move(display.left + 25, display.bottom + 57.5)
-    :addTo(touch_layer)
-    display.newSprite("down.png")
-    :move(display.left + 100, display.bottom + 25)
-    :addTo(touch_layer)
-    display.newSprite("right.png")
-    :move(display.left + 175, display.bottom + 57.5)
-    :addTo(touch_layer)
+    control:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener,control)
 
-    self.interactions = require("app.views.interactions").new(true, {}, display.right, 0, cc.size(75*6, 75), cc.p(75, 75), kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown)
+    self.interactions = require("app.views.interactions").new(true, {}, display.right, 0, cc.size(75*6, 75), cc.p(75, 75), kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown, self)
     self.interactions:setAnchorPoint(cc.p(0, 0))
     self.interactions:setPosition(cc.p(0, 0))
-    self:addChild(self.interactions, 100)
+    self:addChild(self.interactions, 90)
+    self.interactions_position_x = display.right
 
     self.time = DAWN_TIME
     self.light_status = DAY

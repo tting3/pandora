@@ -107,6 +107,9 @@ local plants = {
         if self.types[i][j] == -1 or self.being_harvested[i][j] ~= 0 then
             return false
         end
+        if self.types[i][j] == plants_type.CROP.type and self.growth_status[i][j] ~= plants_type.CROP.growth_time then
+            return false
+        end
         return true
     end,
     find_closest = function(self, struct, position, type)

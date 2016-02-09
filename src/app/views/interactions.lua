@@ -12,8 +12,8 @@ local interactions = class("interactions", function()
     return display.newLayer()
 end)
 
-function interactions:ctor(bounceable, new_elements, x, y, size, item_size, direction, order)
-    self:onEnter(bounceable, new_elements, x, y, size, item_size, direction, order)
+function interactions:ctor(bounceable, new_elements, x, y, size, item_size, direction, order, interaction)
+    self:onEnter(bounceable, new_elements, x, y, size, item_size, direction, order, interaction)
 end
 
 function interactions.scrollViewDidScroll(view)
@@ -25,7 +25,7 @@ function interactions.scrollViewDidZoom(view)
 end
 
 function interactions.tableCellTouched(table, cell)
-    release_print("cell touched at index: " .. cell:getIdx())
+    table.interaction:interaction_press_call_back(cell:getIdx())
 end
 
 function interactions.cellSizeForTable(table,idx)
@@ -60,7 +60,7 @@ function interactions.numberOfCellsInTableView(TABLE)
     return table.getn(TABLE.elements)
 end
 
-function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, direction, order)
+function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, direction, order, interaction)
     self.elements = {}
     for i, element in pairs(new_elements) do
         self.elements[i] = {}
@@ -78,6 +78,7 @@ function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, d
     self.table_view:setDelegate()
     self.table_view.elements = self.elements
     self.table_view.item_size = self.item_size
+    self.table_view.interaction = interaction
     self:addChild(self.table_view)
     self.table_view:setVerticalFillOrder(order) --kCCTableViewFillBottomUp
     self.table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)
