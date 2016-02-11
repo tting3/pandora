@@ -1,74 +1,74 @@
 --
 -- Created by IntelliJ IDEA.
 -- User: wzl
--- Date: 2/4/2016
--- Time: 9:10 AM
+-- Date: 2/10/2016
+-- Time: 10:20 AM
 -- To change this template use File | Settings | File Templates.
 --
 
-local TableViewLayer = class("TableViewLayer", function()
+local inventory = class("inventory", function()
     return display.newLayer()
 end)
 
-function TableViewLayer:ctor(bounceable, new_elements, x, y, size, item_size, row_index, direction, order)
-    self:onEnter(bounceable, new_elements, x, y, size, item_size, row_index, direction, order)
+function inventory:ctor(bounceable, new_elements, x, y, cols, rows, size, item_size, direction, order)
+    self:onEnter(bounceable, new_elements, x, y, cols, rows, size, item_size, direction, order)
 end
 
-function TableViewLayer.scrollViewDidScroll(view)
+function inventory.scrollViewDidScroll(view)
     --print("scrollViewDidScroll")
 end
 
-function TableViewLayer.scrollViewDidZoom(view)
+function inventory.scrollViewDidZoom(view)
     --print("scrollViewDidZoom")
 end
 
-function TableViewLayer.tableCellTouched(table, cell)
-    release_print("cell touched at index: "..table.row_index..":" .. cell:getIdx())
+function inventory.tableCellTouched(table, cell)
+    --release_print("rows touched at index: " .. cell:getIdx())
 end
 
-function TableViewLayer.cellSizeForTable(table,idx)
+function inventory.cellSizeForTable(table,idx)
     return table.item_size.x, table.item_size.y
 end
 
-function TableViewLayer.tableCellAtIndex(table, idx)
+function inventory.tableCellAtIndex(table, idx)
     local cell = cc.TableViewCell:new()
-    if table.elements[idx+1].back ~= nil then
-        local table_bg = display.newSprite(table.elements[idx+1].back)
-        table_bg:setAnchorPoint(cc.p(0, 0))
-        table_bg:setPosition(cc.p(0, 0))
-        cell:addChild(table_bg)
+
+    local elements = {}
+    for i = 1, table.cols do
+        elements[i] = table.elements[i + table.cols * idx]
     end
-    if table.elements[idx+1].item ~= nil then
-        local item_bg = display.newSprite(table.elements[idx+1].item)
-        item_bg:setAnchorPoint(cc.p(0, 0))
-        item_bg:setPosition(cc.p(0, 0))
-        cell:addChild(item_bg)
-    end
+    local rlayer = require("app.views.TableViewLayer").new(false, elements, 0, 0, cc.size(table.cols*table.item_size.x, table.item_size.y), table.item_size, idx, kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown)
+    rlayer:setAnchorPoint(cc.p(0, 0))
+    rlayer:setPosition(cc.p(0, 0))
+    cell:addChild(rlayer)
+
     return cell
 end
 
-function TableViewLayer.numberOfCellsInTableView(TABLE)
-    return table.getn(TABLE.elements)
+function inventory.numberOfCellsInTableView(TABLE)
+    return TABLE.rows
 end
 
-function TableViewLayer:onEnter(bounceable, new_elements, x ,y, size, item_size, row_index, direction, order)
+function inventory:onEnter(bounceable, new_elements, x ,y, cols, rows, size, item_size, direction, order)
     self.elements = {}
     for i, element in pairs(new_elements) do
         self.elements[i] = {}
         self.elements[i].back = element.back
         self.elements[i].item = element.item
     end
-    self.item_size = item_size
     self.table_view = cc.TableView:create(size)
     self.table_view:setAnchorPoint(cc.p(0, 0))
     self.table_view:setDirection(direction)
     self.table_view:move(x, y)
     self.table_view:setBounceable(bounceable)
     self.table_view:setTouchEnabled(true)
-    self.table_view:setDelegate()
+    --self.table_view:setDelegate()
     self.table_view.elements = self.elements
-    self.table_view.item_size = self.item_size
-    self.table_view.row_index = row_index
+    self.table_view.item_size = item_size
+    self.table_view.cols = cols
+    self.table_view.rows = rows
+    self.table_view.x = x
+    self.table_view.y = y
     self:addChild(self.table_view)
     self.table_view:setVerticalFillOrder(order) --kCCTableViewFillBottomUp
     self.table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)
@@ -80,4 +80,4 @@ function TableViewLayer:onEnter(bounceable, new_elements, x ,y, size, item_size,
     self.table_view:reloadData()
 end
 
-return TableViewLayer
+return inventory
