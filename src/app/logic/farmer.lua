@@ -93,12 +93,12 @@ local farmer = {
                 end
             end
         elseif self.status == LOOKING_FOR_HARVEST then
-            if structs[self.farm_index].plants:check_plant(self.crop_pos.x, self.crop_pos.y) == false then
+            if structs[self.farm_index].plants:check_plant(self.crop_pos.x, self.crop_pos.y, plants_type.CROP) == false then
                 local ii = -1
                 local jj = -1
-                ii, jj = structs[self.farm_index].plants:find_closest(structs[self.farm_index], minions[index].position, plants_type.CROP.type)
+                ii, jj = structs[self.farm_index].plants:find_closest(structs[self.farm_index], minions[index].position, plants_type.CROP)
                 self.crop_pos = cc.p(ii, jj)
-                self.last_crop_num = structs[self.farm_index].plants.crop_num
+                self.last_crop_num = structs[self.farm_index].plants.plants_num[plants_type.CROP.type]
             end
             if self.crop_pos.x ~= -1 and self.crop_pos.y ~= -1 then
                 if self.path == nil then
@@ -109,9 +109,10 @@ local farmer = {
                 local y = structs[self.farm_index].position.y + (structs[self.farm_index].map.y - self.crop_pos.y - 1) * structs[self.farm_index].tile.y
                 self.path.dest = cal_pos_with_index(cc.p(x, y), cc.p(1, 1), structs[self.farm_index].tile)
                 if self.path:cal(minions, structs, map, index, dt) == true then
-                    local result = structs[self.farm_index].plants:harvest_plant(self.crop_pos.x, self.crop_pos.y, dt)
+                    local result, fruit = structs[self.farm_index].plants:harvest_plant(self.crop_pos.x, self.crop_pos.y, dt)
                     self.path = nil
                     if result == success then
+                        minions[index]:add_item(fruit)
                         self.status = DELIEVERING
                     elseif result == failed then
                         self.crop_pos = cc.p(-1, -1)
@@ -124,8 +125,9 @@ local farmer = {
             end
         elseif self.status == HARVESTING then
             minions[index].dir = STOP
-            local result = structs[self.farm_index].plants:harvest_plant(self.crop_pos.x, self.crop_pos.y, dt)
+            local result, fruit = structs[self.farm_index].plants:harvest_plant(self.crop_pos.x, self.crop_pos.y, dt)
             if result == success then
+                minions[index]:add_item(fruit)
                 self.status = DELIEVERING
             elseif result == failed then
                 self.status = LOOKING_FOR_HARVEST

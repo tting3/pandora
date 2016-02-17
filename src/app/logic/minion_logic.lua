@@ -89,7 +89,7 @@ local minion_logic = {
             end
         end
     end,
-    thief_init = function(self, target_structs)
+    thief_init = function(self, target_structs, new_targets_list)
         local task_index = self:find_task(task.STEALING)
         if task_index == -1 then
             self.queued_tasks_num = self.queued_tasks_num + 1
@@ -98,7 +98,7 @@ local minion_logic = {
         self.queued_tasks[task_index] = thief:new()
         self.queued_tasks[task_index].task_index = task_index
         self.queued_tasks[task_index].task_name = task.STEALING
-        self.queued_tasks[task_index]:patrol_init(target_structs)
+        self.queued_tasks[task_index]:patrol_init(target_structs, new_targets_list)
     end,
     steal = function(self, m_character, minions, structs, map, index, dt)
         if self.curr_task.task_name == task.STEALING then

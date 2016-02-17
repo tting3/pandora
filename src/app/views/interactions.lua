@@ -12,8 +12,8 @@ local interactions = class("interactions", function()
     return display.newLayer()
 end)
 
-function interactions:ctor(bounceable, new_elements, x, y, size, item_size, direction, order, interaction)
-    self:onEnter(bounceable, new_elements, x, y, size, item_size, direction, order, interaction)
+function interactions:ctor(bounceable, new_elements, x, y, size, item_size, direction, order, main_game)
+    self:onEnter(bounceable, new_elements, x, y, size, item_size, direction, order, main_game)
 end
 
 function interactions.scrollViewDidScroll(view)
@@ -25,7 +25,7 @@ function interactions.scrollViewDidZoom(view)
 end
 
 function interactions.tableCellTouched(table, cell)
-    table.interaction:interaction_press_call_back(cell:getIdx())
+    table.main_game:interaction_press_call_back(cell:getIdx())
 end
 
 function interactions.cellSizeForTable(table,idx)
@@ -60,7 +60,8 @@ function interactions.numberOfCellsInTableView(TABLE)
     return table.getn(TABLE.elements)
 end
 
-function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, direction, order, interaction)
+function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, direction, order, main_game)
+    --[[
     self.elements = {}
     for i, element in pairs(new_elements) do
         self.elements[i] = {}
@@ -68,7 +69,7 @@ function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, d
         self.elements[i].item = element.item
         self.elements[i].label = element.label
     end
-    self.item_size = item_size
+    ]]
     self.table_view = cc.TableView:create(size)
     self.table_view:setAnchorPoint(cc.p(0, 0))
     self.table_view:setDirection(direction)
@@ -76,9 +77,9 @@ function interactions:onEnter(bounceable, new_elements, x ,y, size, item_size, d
     self.table_view:setBounceable(bounceable)
     self.table_view:setTouchEnabled(true)
     self.table_view:setDelegate()
-    self.table_view.elements = self.elements
-    self.table_view.item_size = self.item_size
-    self.table_view.interaction = interaction
+    self.table_view.elements = new_elements
+    self.table_view.item_size = item_size
+    self.table_view.main_game = main_game
     self:addChild(self.table_view)
     self.table_view:setVerticalFillOrder(order) --kCCTableViewFillBottomUp
     self.table_view:registerScriptHandler(self.scrollViewDidScroll,CCTableView.kTableViewScroll)

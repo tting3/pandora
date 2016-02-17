@@ -16,7 +16,7 @@ local plants = {
     types = {},
     being_harvested = {},
     growth_status = {},
-    crop_num = 0,
+    plants_num = {},
     fruit_sprites = {},
     node = nil,
     width = 0,
@@ -34,20 +34,24 @@ local plants = {
             self.being_harvested[i] = {}
             self.growth_status[i] = {}
             self.fruit_sprites[i] = {}
+            self.plants_num = {}
+            for j = 1, 10 do
+                self.plants_num[j] = 0
+            end
             local x, y = self.node:getPosition()
             for j = 0, struct.map.y - 1 do
                 local gid = layer:tileGIDAt(cc.p(i, j))
                 local property = struct.walls:propertiesForGID(gid)
                 if property ~= 0 then
-                    self.types[i][j] = plants_type.CROP.type
+                    self.types[i][j] = plants_type.CROP
                     self.being_harvested[i][j] = 0
                     self.growth_status[i][j] = plants_type.CROP.growth_time
-                    self.crop_num = self.crop_num + 1
+                    self.plants_num[plants_type.CROP.id] = self.plants_num[plants_type.CROP.id] + 1
                     self.fruit_sprites[i][j] = display.newSprite(plants_type.CROP.fruit_name)
                         :move(x + struct.position.x - display.cx - self.width / 2 + struct.tile.x * i + 25, y - display.cy + struct.position.y - self.height / 2 + struct.tile.y * (struct.map.y - j - 1) + 25)
                         :addTo(self.node, 2)
                 else
-                    self.types[i][j] = -1
+                    self.types[i][j] = nil
                     self.being_harvested[i][j] = -1
                     self.growth_status[i][j] = -1
                     self.fruit_sprites[i][j] = nil
@@ -56,59 +60,65 @@ local plants = {
         end
     end,
     add_plant = function(self, i, j, plant_type)
-        if i >= 0 and j >= 0 and self.types[i][j] == -1 then
+        if i >= 0 and j >= 0 and self.types[i][j] == nil then
             self.types[i][j] = plant_type
         end
     end,
     harvest_plant = function(self, i, j, dt)
         if i < 0 or j < 0 then
-            return failed
+            return failed, nil
         end
-        if self.types[i][j] == -1 then
-            return failed
+        if self.types[i][j] == nil then
+            return failed, nil
         end
-        if self.types[i][j] == plants_type.CROP.type then
-            if self.growth_status[i][j] ~= plants_type.CROP.growth_time then
-                return failed
+        if self.growth_status[i][j] ~= self.types[i][j].growth_time then
+            return failed, nil
+        else
+            if self.being_harvested[i][j] < self.types[i][j].harvest_time then
+                self.being_harvested[i][j] = self.being_harvested[i][j] + dt
+                return working, nil
             else
-                if self.being_harvested[i][j] < plants_type.CROP.harvest_time then
-                    self.being_harvested[i][j] = self.being_harvested[i][j] + dt
-                    return working
-                else
-                    self.fruit_sprites[i][j]:setVisible(false)
-                    self.being_harvested[i][j] = 0
-                    self.growth_status[i][j] = 0
-                    self.crop_num = self.crop_num - 1
-                    return success
-                end
+                self.fruit_sprites[i][j]:setVisible(false)
+                self.being_harvested[i][j] = 0
+                self.growth_status[i][j] = 0
+                self.plants_num[self.types[i][j].id] = self.plants_num[self.types[i][j].id] - 1
+                return success, {type = self.types[i][j].fruit.item_type, num = self.types[i][j].fruit.num}
             end
         end
+    end,
+    harvest_cancel = function(self, i, j)
+        if self.types[i][j] == nil then
+            return
+        end
+        self.being_harvested[i][j] = 0
     end,
     plants_grow = function(self, structs, index, dt)
         local x, y = self.node:getPosition()
         for i = 0, structs[index].map.x - 1 do
             for j = 0, structs[index].map.y - 1 do
-                if self.types[i][j] ~= -1
-                    and self.growth_status[i][j] < plants_type.CROP.growth_time then
+                if self.types[i][j] ~= nil
+                    and self.growth_status[i][j] < self.types[i][j].growth_time then
                     self.growth_status[i][j] = self.growth_status[i][j] + dt
-                    if self.growth_status[i][j] >= plants_type.CROP.growth_time then
-                        self.growth_status[i][j] = plants_type.CROP.growth_time
-                        self.crop_num = self.crop_num + 1
+                    if self.growth_status[i][j] >= self.types[i][j].growth_time then
+                        self.growth_status[i][j] = self.types[i][j].growth_time
+                        self.plants_num[self.types[i][j].id] = self.plants_num[self.types[i][j].id] + 1
                         self.fruit_sprites[i][j]:setVisible(true)
                     end
                 end
             end
         end
     end,
-    check_plant = function(self, i, j)
+    check_plant = function(self, i, j, plant)
         if i < 0 or j < 0 then
             return false
         end
-        if self.types[i][j] == -1 or self.being_harvested[i][j] ~= 0 then
+        if self.types[i][j] == nil or self.being_harvested[i][j] ~= 0 or self.growth_status[i][j] ~= self.types[i][j].growth_time then
             return false
         end
-        if self.types[i][j] == plants_type.CROP.type and self.growth_status[i][j] ~= plants_type.CROP.growth_time then
-            return false
+        if plant ~= nil then
+            if self.growth_status[i][j] ~= plant.growth_time then
+                return false
+            end
         end
         return true
     end,
@@ -124,7 +134,7 @@ local plants = {
             for j = 0, struct.map.y - 1 do
                 if self.types[i][j] == type
                     and self.being_harvested[i][j] == 0 then
-                    if type == plants_type.CROP.type and self.growth_status[i][j] == plants_type.CROP.growth_time then
+                    if self.growth_status[i][j] == type.growth_time then
                         local new_dis = (i - x) * (i - x) + (j - y) * (j - y)
                         if new_dis <= closest then
                             closest = new_dis
@@ -146,7 +156,7 @@ function plants:new(o)
     o.type = {}
     o.being_harvested = {}
     o.growth_status = {}
-    o.crop_num = 0
+    o.plants_num = {}
     o.fruit_sprites = {}
     o.node = nil
     o.width = 0

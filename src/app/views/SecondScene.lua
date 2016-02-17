@@ -8,6 +8,7 @@
 
 local SecondScene = class("SecondScene", cc.load("mvc").ViewBase)
 
+local HOLD_TIME = 0.5
 local DAY_TIME = 120.0
 local DAWN_TIME = 10.0
 local NIGHT_TIME = 100.0
@@ -23,8 +24,19 @@ local DOWN = 0
 local LEFT = 1
 local RIGHT = 2
 local UP = 3
-local speed = 2.0
+local ONE = 0
+local HALF = 1
+local FULL = 2
+local MAX_TASKS_NUM = 10
+local MAX_MINIONS_NUM = 100
+local success = 1
+local working = 0
+local failed = -1
 local interaction_pop_speed = 5.0
+local inventory_cols = 6
+local inventory_rows = 4
+local inventory_cols_chest = 8
+local inventory_rows_chest = 7
 
 local minion_motions = {}
 minion_motions[DOWN] = "MINION_DOWN"
@@ -42,6 +54,7 @@ local functionality = require("app.object.functionality")
 local plants = require("app.object.plants")
 local plants_type = require("app.object.plants_type")
 local torch = require("app.object.torch")
+local item_type = require("app.object.item_type")
 local identity = require("app.logic.identity")
 local minion_logic = require("app.logic.minion_logic")
 local fixedDeltaTimeScale = 60.0
@@ -75,9 +88,9 @@ function SecondScene:init_minion_frame()
         j = math.random(i)
         name_table[i], name_table[j] = name_table[j], name_table[i]
     end
-    local a = 2
-    local b = 1
-    local c = 20
+    local a = 5
+    local b = 0
+    local c = 10
     for i = 0, a do
         self:make_minion(name_table[i + 1], identity.slave_farm, 250+i*30, -40)
         self.minions[i+1].logic:farm_init(self.structs)
@@ -85,10 +98,23 @@ function SecondScene:init_minion_frame()
     end
     for i = 0, b do
         self:make_minion(name_table[i + a + 2], identity.free_folk, -150-i*30, 50)
-        self.minions[a+i+2].logic:thief_init({1, 2, 3, 4})
+        self.minions[a+i+2].logic:thief_init({1, 2, 3, 4}, {identity.bussiness_guy})
     end
     for i = 0, c do
         self:make_minion(name_table[i + a + b + 3], identity.slave_dispose, -150-i*5, 50)
+        self.minions[i + a + b + 3].inventory[1] = {}
+        self.minions[i + a + b + 3].inventory[1].type = item_type.SWORD
+        self.minions[i + a + b + 3].inventory[1].num = 1
+        self.minions[i + a + b + 3].inventory[2] = {}
+        self.minions[i + a + b + 3].inventory[2].type = item_type.KEY
+        self.minions[i + a + b + 3].inventory[2].num = 1
+        self.minions[i + a + b + 3].inventory[3] = {}
+        self.minions[i + a + b + 3].inventory[3].type = item_type.CROP
+        self.minions[i + a + b + 3].inventory[3].num = 5
+        self.minions[i + a + b + 3].inventory[4] = {}
+        self.minions[i + a + b + 3].inventory[4].type = item_type.COIN
+        self.minions[i + a + b + 3].inventory[4].num = 10
+        self.minions[i + a + b + 3].inventory.weight = item_type.SWORD.weight + item_type.CROP.weight * self.minions[i + a + b + 3].inventory[3].num
     end
 end
 
@@ -121,9 +147,14 @@ function SecondScene:make_minion(name, id, x, y)
     self.minions[self.minion_size]:set_map_characters(self.map_characters, self.minion_size, self.minions, self.m_character)
     self.minions[self.minion_size]:set_position(self.width / 2 + x, self.height / 2 + y)
     self.minions[self.minion_size]:change_position(0.0, 0.0, self.width / 2, self.height / 2)
-    self.minions[self.minion_size]:set_name(name, -0.2)
+    self.minions[self.minion_size]:set_name(name)
     self.minions[self.minion_size]:set_id(id)
     self.minions[self.minion_size]:add_shadow()
+    --[[
+    for i = 1, inventory_rows * inventory_cols do
+        self.minions[self.minion_size].inventory[i] = nil
+    end
+    ]]
     self.minion_size = self.minion_size + 1
 end
 
@@ -134,6 +165,39 @@ local function back_enter(tiledmap, layer_name, light)
     local layer = tiledmap:layerNamed(layer_name)
     if layer ~= nil then
         layer:setGLProgram(light)
+    end
+end
+
+function SecondScene:struct_shader(i, back_shader, char_shader)
+    if self.structs[i].functionality == functionality.LB then
+        back_enter(self.structs[i].walls, "front", back_shader)
+        back_enter(self.structs[i].walls, "back", back_shader)
+        back_enter(self.structs[i].room1, "storage", back_shader)
+        back_enter(self.structs[i].room1, "entrance", back_shader)
+        back_enter(self.structs[i].room1, "floor", back_shader)
+        back_enter(self.structs[i].room1, "beds", back_shader)
+        back_enter(self.structs[i].room2, "storage", back_shader)
+        back_enter(self.structs[i].room2, "entrance", back_shader)
+        back_enter(self.structs[i].room2, "floor", back_shader)
+        back_enter(self.structs[i].room2, "beds", back_shader)
+        back_enter(self.structs[i].room3, "storage", back_shader)
+        back_enter(self.structs[i].room3, "entrance", back_shader)
+        back_enter(self.structs[i].room3, "floor", back_shader)
+        back_enter(self.structs[i].room3, "beds", back_shader)
+        back_enter(self.structs[i].roofs, "front", back_shader)
+        back_enter(self.structs[i].roofs, "back", back_shader)
+    end
+    if self.structs[i].functionality == functionality.FARM then
+        back_enter(self.structs[i].walls, "grass", back_shader)
+        back_enter(self.structs[i].walls, "plants", back_shader)
+        back_enter(self.structs[i].walls, "fences", back_shader)
+        for ii = 0, self.structs[i].map.x - 1 do
+            for jj = 0, self.structs[i].map.y - 1 do
+                if self.structs[i].plants.fruit_sprites[ii][jj] ~= nil then
+                    self.structs[i].plants.fruit_sprites[ii][jj]:setGLProgram(char_shader)
+                end
+            end
+        end
     end
 end
 
@@ -180,72 +244,18 @@ function SecondScene:detect_struct(i)
             self.structs[i].in_vision = true
             if self.light_status == DAY then
                 local day_back = cc.GLProgramCache:getInstance():getGLProgram("day_back")
-                if self.structs[i].functionality == functionality.LB then
-                    back_enter(self.structs[i].walls, "front", day_back)
-                    back_enter(self.structs[i].walls, "back", day_back)
-                    back_enter(self.structs[i].room1, "storage", day_back)
-                    back_enter(self.structs[i].room1, "entrance", day_back)
-                    back_enter(self.structs[i].room1, "floor", day_back)
-                    back_enter(self.structs[i].room2, "storage", day_back)
-                    back_enter(self.structs[i].room2, "entrance", day_back)
-                    back_enter(self.structs[i].room2, "floor", day_back)
-                    back_enter(self.structs[i].room3, "storage", day_back)
-                    back_enter(self.structs[i].room3, "entrance", day_back)
-                    back_enter(self.structs[i].room3, "floor", day_back)
-                    back_enter(self.structs[i].roofs, "front", day_back)
-                    back_enter(self.structs[i].roofs, "back", day_back)
-                end
-                if self.structs[i].functionality == functionality.FARM then
-                    back_enter(self.structs[i].walls, "grass", day_back)
-                    back_enter(self.structs[i].walls, "plants", day_back)
-                    back_enter(self.structs[i].walls, "fences", day_back)
-                end
+                local day_char = cc.GLProgramCache:getInstance():getGLProgram("day_char")
+                self:struct_shader(i, day_back, day_char)
             end
             if self.light_status == TWILIGHT or self.light_status == DAWN then
                 local dawn_back = cc.GLProgramCache:getInstance():getGLProgram("dawn_back")
-                if self.structs[i].functionality == functionality.LB then
-                    back_enter(self.structs[i].walls, "front", dawn_back)
-                    back_enter(self.structs[i].walls, "back", dawn_back)
-                    back_enter(self.structs[i].room1, "storage", dawn_back)
-                    back_enter(self.structs[i].room1, "entrance", dawn_back)
-                    back_enter(self.structs[i].room1, "floor", dawn_back)
-                    back_enter(self.structs[i].room2, "storage", dawn_back)
-                    back_enter(self.structs[i].room2, "entrance", dawn_back)
-                    back_enter(self.structs[i].room2, "floor", dawn_back)
-                    back_enter(self.structs[i].room3, "storage", dawn_back)
-                    back_enter(self.structs[i].room3, "entrance", dawn_back)
-                    back_enter(self.structs[i].room3, "floor", dawn_back)
-                    back_enter(self.structs[i].roofs, "front", dawn_back)
-                    back_enter(self.structs[i].roofs, "back", dawn_back)
-                end
-                if self.structs[i].functionality == functionality.FARM then
-                    back_enter(self.structs[i].walls, "grass", dawn_back)
-                    back_enter(self.structs[i].walls, "plants", dawn_back)
-                    back_enter(self.structs[i].walls, "fences", dawn_back)
-                end
+                local dawn_char = cc.GLProgramCache:getInstance():getGLProgram("dawn_char")
+                self:struct_shader(i, dawn_back, dawn_char)
             end
             if self.light_status == NIGHT then
                 local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
-                if self.structs[i].functionality == functionality.LB then
-                    back_enter(self.structs[i].walls, "front", night_back)
-                    back_enter(self.structs[i].walls, "back", night_back)
-                    back_enter(self.structs[i].room1, "storage", night_back)
-                    back_enter(self.structs[i].room1, "entrance", night_back)
-                    back_enter(self.structs[i].room1, "floor", night_back)
-                    back_enter(self.structs[i].room2, "storage", night_back)
-                    back_enter(self.structs[i].room2, "entrance", night_back)
-                    back_enter(self.structs[i].room2, "floor", night_back)
-                    back_enter(self.structs[i].room3, "storage", night_back)
-                    back_enter(self.structs[i].room3, "entrance", night_back)
-                    back_enter(self.structs[i].room3, "floor", night_back)
-                    back_enter(self.structs[i].roofs, "front", night_back)
-                    back_enter(self.structs[i].roofs, "back", night_back)
-                end
-                if self.structs[i].functionality == functionality.FARM then
-                    back_enter(self.structs[i].walls, "grass", night_back)
-                    back_enter(self.structs[i].walls, "plants", night_back)
-                    back_enter(self.structs[i].walls, "fences", night_back)
-                end
+                local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
+                self:struct_shader(i, night_back, night_char)
             end
         end
     end
@@ -350,7 +360,7 @@ function SecondScene:detect_minion(i)
                 local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
                 self.minions[i].sprite:setGLProgram(night_char)
             end
-            self.minions[i]:set_name(self.minions[i].name, -0.2)
+            self.minions[i]:set_name(self.minions[i].name)
             self.minions[i].animated = false
             self.minions[i]:add_shadow()
             self.c_node:reorderChild(self.minions[i].sprite, math.floor(display.top - (self.minions[i].position.y - self.m_character.position.y + display.cy)))
@@ -388,33 +398,7 @@ local function enter_day(self)
     back_enter(self.map, "grass", day_back)
     for i, struct in pairs(self.structs) do
         if struct.in_vision == true then
-            if struct.functionality == functionality.LB then
-                back_enter(self.structs[i].walls, "front", day_back)
-                back_enter(self.structs[i].walls, "back", day_back)
-                back_enter(self.structs[i].room1, "storage", day_back)
-                back_enter(self.structs[i].room1, "entrance", day_back)
-                back_enter(self.structs[i].room1, "floor", day_back)
-                back_enter(self.structs[i].room2, "storage", day_back)
-                back_enter(self.structs[i].room2, "entrance", day_back)
-                back_enter(self.structs[i].room2, "floor", day_back)
-                back_enter(self.structs[i].room3, "storage", day_back)
-                back_enter(self.structs[i].room3, "entrance", day_back)
-                back_enter(self.structs[i].room3, "floor", day_back)
-                back_enter(self.structs[i].roofs, "front", day_back)
-                back_enter(self.structs[i].roofs, "back", day_back)
-            end
-            if struct.functionality == functionality.FARM then
-                back_enter(self.structs[i].walls, "grass", day_back)
-                back_enter(self.structs[i].walls, "plants", day_back)
-                back_enter(self.structs[i].walls, "fences", day_back)
-                for ii = 0, self.structs[i].map.x - 1 do
-                    for jj = 0, self.structs[i].map.y - 1 do
-                        if self.structs[i].plants.fruit_sprites[ii][jj] ~= nil then
-                            self.structs[i].plants.fruit_sprites[ii][jj]:setGLProgram(day_char)
-                        end
-                    end
-                end
-            end
+            self:struct_shader(i, day_back, day_char)
         end
     end
     self.structs_roof:setGLProgram(day_back)
@@ -439,33 +423,7 @@ local function enter_dawn(self)
     back_enter(self.map, "grass", dawn_back)
     for i, struct in pairs(self.structs) do
         if struct.in_vision == true then
-            if struct.functionality == functionality.LB then
-                back_enter(self.structs[i].walls, "front", dawn_back)
-                back_enter(self.structs[i].walls, "back", dawn_back)
-                back_enter(self.structs[i].room1, "storage", dawn_back)
-                back_enter(self.structs[i].room1, "entrance", dawn_back)
-                back_enter(self.structs[i].room1, "floor", dawn_back)
-                back_enter(self.structs[i].room2, "storage", dawn_back)
-                back_enter(self.structs[i].room2, "entrance", dawn_back)
-                back_enter(self.structs[i].room2, "floor", dawn_back)
-                back_enter(self.structs[i].room3, "storage", dawn_back)
-                back_enter(self.structs[i].room3, "entrance", dawn_back)
-                back_enter(self.structs[i].room3, "floor", dawn_back)
-                back_enter(self.structs[i].roofs, "front", dawn_back)
-                back_enter(self.structs[i].roofs, "back", dawn_back)
-            end
-            if struct.functionality == functionality.FARM then
-                back_enter(self.structs[i].walls, "grass", dawn_back)
-                back_enter(self.structs[i].walls, "plants", dawn_back)
-                back_enter(self.structs[i].walls, "fences", dawn_back)
-                for ii = 0, self.structs[i].map.x - 1 do
-                    for jj = 0, self.structs[i].map.y - 1 do
-                        if self.structs[i].plants.fruit_sprites[ii][jj] ~= nil then
-                            self.structs[i].plants.fruit_sprites[ii][jj]:setGLProgram(dawn_char)
-                        end
-                    end
-                end
-            end
+            self:struct_shader(i, dawn_back, dawn_char)
         end
     end
     self.structs_roof:setGLProgram(dawn_back)
@@ -487,9 +445,81 @@ local function enter_dawn(self)
     end
 end
 
-function SecondScene:interaction_press_call_back(index)
-    release_print("cell at "..index)
+local function enter_night(self)
+    local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
+    local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
+    back_enter(self.map, "ground", night_back)
+    back_enter(self.map, "grass", night_back)
+    for i, struct in pairs(self.structs) do
+        if struct.in_vision == true then
+            self:struct_shader(i, night_back, night_char)
+        end
+    end
+    for i, minion in pairs(self.minions) do
+        if self.minions[i].sprite ~= nil then
+            self.minions[i].sprite:setGLProgram(night_char)
+        end
+    end
+    self.m_character.sprite:setGLProgram(night_char)
+    for i, single_torch in pairs(self.torches) do
+        if self.torches[i].sprite ~= nil then
+            self.torches[i].sprite:stopAllActions()
+            self.torches[i].sprite:playAnimationForever(display.getAnimationCache(torch_motion))
+            self.torches[i].sprite:setGLProgram(night_char)
+        end
+    end
 
+    self.structs_roof:setGLProgram(night_back)
+    self.structs_wall:setGLProgram(night_back)
+    local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
+    local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
+end
+
+function SecondScene:inventory_press_call_back(inventory, row_index, col_index)
+    if inventory == self.m_character.inventory then
+        --cc.Device:setKeepScreenOn(true)
+        --release_print("asd")
+    end
+end
+
+function SecondScene:interaction_press_call_back(index)
+    --release_print("cell at "..index)
+    if index == -1 then
+        return
+    end
+    if index + 1 <= #self.last_character_interactions then
+        self.pause_flag = true
+        self.interact_flag = true
+        self.control:setTexture("interact.png")
+        self.interact_target = self.last_character_interactions[index + 1]
+        self.inventory_layer:setVisible(false)
+        if self.chest_flag == true then
+            self.left_inventory = require("app.views.inventory_view").new(false, {}, 100, display.cy - inventory_rows * 50 / 2, inventory_cols, inventory_rows, cc.size(inventory_cols * 50, inventory_rows * 50), cc.p(50, 50), kCCScrollViewDirectionVertical, kCCTableViewFillTopDown, self)
+            :setAnchorPoint(cc.p(0, 0))
+            :setPosition(cc.p(0, 0))
+            :addTo(self.inventory_layer)
+            self.chest_flag = false
+        end
+        self.left_inventory:setVisible(true)
+    else
+        for i = 1, MAX_TASKS_NUM do
+            if self.m_character_task[i] == nil then
+                self.m_character_task[i] = self.last_object_interactions[index + 1 - #self.last_character_interactions]
+                break
+            end
+        end
+        --self.last_object_interactions[index + 1 - #self.last_character_interactions].call_back(self, self.last_object_interactions[index + 1 - #self.last_character_interactions].parameters)
+    end
+end
+
+function SecondScene:harvest(parameters)
+    --release_print(tostring(parameters[1]).." "..tostring(parameters[2]))
+    --release_print(tostring(parameters[1]))
+    return self.structs[parameters.build_index].plants:harvest_plant(parameters.i, parameters.j, self.dt)
+end
+
+function SecondScene:harvest_cancel(parameters)
+    self.structs[parameters.build_index].plants:harvest_cancel(parameters.i, parameters.j)
 end
 
 function SecondScene:m_check_surroundings()
@@ -516,8 +546,14 @@ function SecondScene:m_check_surroundings()
             if self.m_character.height_level == 0 then
                 local temp_i = math.floor((self.m_character.position.x - self.structs[build_index].position.x) / self.structs[build_index].tile.x)
                 local temp_j = self.structs[build_index].map.y - 1 - math.floor((self.m_character.position.y - self.structs[build_index].position.y) / self.structs[build_index].tile.y)
-                if self.structs[build_index].plants:check_plant(temp_i, temp_j) == true then
-                    objects[#objects + 1] = "object/harvest.png"
+                if self.structs[build_index].plants:check_plant(temp_i, temp_j, nil) == true then
+                    local index = #objects + 1
+                    objects[index] = {}
+                    objects[index].item = "object/harvest.png"
+                    objects[index].call_back = self.harvest
+                    objects[index].cancel = self.harvest_cancel
+                    objects[index].parameters = {build_index = build_index, i = temp_i, j = temp_j}
+                    objects[index].stop_when_walking = true
                 end
             end
         end
@@ -533,40 +569,59 @@ function SecondScene:m_check_surroundings()
             end
         end
     end
+    local function deepcompare(t1,t2,ignore_mt)
+        local ty1 = type(t1)
+        local ty2 = type(t2)
+        if ty1 ~= ty2 then return false end
+        -- non-table types can be directly compared
+        if ty1 ~= 'table' and ty2 ~= 'table' then return t1 == t2 end
+        -- as well as tables which have the metamethod __eq
+        local mt = getmetatable(t1)
+        if not ignore_mt and mt and mt.__eq then return t1 == t2 end
+        for k1,v1 in pairs(t1) do
+            local v2 = t2[k1]
+            if v2 == nil or not deepcompare(v1,v2) then return false end
+        end
+        for k2,v2 in pairs(t2) do
+            local v1 = t1[k2]
+            if v1 == nil or not deepcompare(v1,v2) then return false end
+        end
+        return true
+    end
     if #self.last_object_interactions ~= #objects then
         interactions_change_flag = true
     elseif #objects ~= 0 then
         for ii = 1, #objects do
-            if self.last_object_interactions[ii] ~= objects[ii] then
+            if deepcompare(self.last_object_interactions[ii], objects[ii], true) == false then
                 interactions_change_flag = true
                 break
             end
         end
     end
     if interactions_change_flag == true then
-        self.interactions.elements = {}
+        self.last_interactions = {}
         self.last_character_interactions = {}
         for ii, character in pairs(characters) do
-            self.interactions.elements[ii] = {}
-            self.interactions.elements[ii].back = "object/character_interaction.png"
-            self.interactions.elements[ii].item = nil
-            self.interactions.elements[ii].label = self.minions[character].name
+            self.last_interactions[ii] = {}
+            self.last_interactions[ii].back = "object/character_interaction.png"
+            self.last_interactions[ii].item = nil
+            self.last_interactions[ii].label = self.minions[character].name
             self.last_character_interactions[ii] = character
         end
         self.last_object_interactions = {}
         for ii, object in pairs(objects) do
-            self.interactions.elements[ii + #self.last_character_interactions] = {}
-            self.interactions.elements[ii + #self.last_character_interactions].back = "object/object_interaction.png"
-            self.interactions.elements[ii + #self.last_character_interactions].item = object
-            self.interactions.elements[ii + #self.last_character_interactions].label = nil
+            self.last_interactions[ii + #self.last_character_interactions] = {}
+            self.last_interactions[ii + #self.last_character_interactions].back = "object/object_interaction.png"
+            self.last_interactions[ii + #self.last_character_interactions].item = object.item
+            self.last_interactions[ii + #self.last_character_interactions].label = nil
             self.last_object_interactions[ii] = object
         end
-        self.interactions.table_view.elements = self.interactions.elements
+        self.interactions.table_view.elements = self.last_interactions
         if (#characters + #objects) <= 6 then
             self.interactions_position_x = display.right - (#characters + #objects)*75
             --self.interactions.table_view:move(display.right - (#characters + #objects)*75, 0)
         else
-            self.interactions_position_x = display.right - 6*75
+            self.interactions_position_x = display.right - 6 * 75
             --self.interactions.table_view:move(display.right - 75*6, 0)
         end
         self.interactions.table_view:reloadData()
@@ -586,63 +641,56 @@ function SecondScene:m_check_surroundings()
     end
 end
 
-local function enter_night(self)
-    local night_back = cc.GLProgramCache:getInstance():getGLProgram("night_back")
-    local night_char = cc.GLProgramCache:getInstance():getGLProgram("night_char")
-    back_enter(self.map, "ground", night_back)
-    back_enter(self.map, "grass", night_back)
-    for i, struct in pairs(self.structs) do
-        if struct.in_vision == true then
-            if struct.functionality == functionality.LB then
-                back_enter(self.structs[i].walls, "front", night_back)
-                back_enter(self.structs[i].walls, "back", night_back)
-                back_enter(self.structs[i].room1, "storage", night_back)
-                back_enter(self.structs[i].room1, "entrance", night_back)
-                back_enter(self.structs[i].room1, "floor", night_back)
-                back_enter(self.structs[i].room2, "storage", night_back)
-                back_enter(self.structs[i].room2, "entrance", night_back)
-                back_enter(self.structs[i].room2, "floor", night_back)
-                back_enter(self.structs[i].room3, "storage", night_back)
-                back_enter(self.structs[i].room3, "entrance", night_back)
-                back_enter(self.structs[i].room3, "floor", night_back)
-                back_enter(self.structs[i].roofs, "front", night_back)
-                back_enter(self.structs[i].roofs, "back", night_back)
-            end
-            if struct.functionality == functionality.FARM then
-                back_enter(self.structs[i].walls, "grass", night_back)
-                back_enter(self.structs[i].walls, "plants", night_back)
-                back_enter(self.structs[i].walls, "fences", night_back)
-                for ii = 0, self.structs[i].map.x - 1 do
-                    for jj = 0, self.structs[i].map.y - 1 do
-                        if self.structs[i].plants.fruit_sprites[ii][jj] ~= nil then
-                            self.structs[i].plants.fruit_sprites[ii][jj]:setGLProgram(night_char)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    for i, minion in pairs(self.minions) do
-        if self.minions[i].sprite ~= nil then
-            self.minions[i].sprite:setGLProgram(night_char)
-        end
-    end
-    self.m_character.sprite:setGLProgram(night_char)
-    for i, single_torch in pairs(self.torches) do
-        if self.torches[i].sprite ~= nil then
-            self.torches[i].sprite:stopAllActions()
-            self.torches[i].sprite:playAnimationForever(display.getAnimationCache(torch_motion))
-            self.torches[i].sprite:setGLProgram(night_char)
-        end
-    end
-
-    self.structs_roof:setGLProgram(night_back)
-    self.structs_wall:setGLProgram(night_back)
-    local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_back)
-    local gl_state = cc.GLProgramState:getOrCreateWithGLProgram(night_char)
-end
-
 function SecondScene:step(dt)
+    self.dt = dt
+    self:m_check_surroundings()
+    if self.inventory_selected ~= nil and self.inventory_block_selected ~= nil then
+        if self.drag_item == nil then
+            local local_inventory_cols = inventory_cols
+            if self.chest_flag == true and self.inventory_selected ~= self.m_character.inventory then
+                local_inventory_cols = inventory_cols_chest
+            end
+            if self.hold_time < HOLD_TIME then
+                self.hold_time = self.hold_time + dt
+            elseif self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] ~= nil then
+                cc.Device:vibrate(0.03)
+                self.drag_item = display.newSprite(self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].type.icon)
+                :setAnchorPoint(0.0, 0.0)
+                :move(self.inventory_init_pos.x - 25, self.inventory_init_pos.y - 25)
+                :addTo(self.inventory_layer, 91)
+                if self.drag_num == FULL or self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num == 1 then
+                    self.drag_item.item = self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols]
+                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] = nil
+                elseif self.drag_num == HALF then
+                    self.drag_item.item = {}
+                    self.drag_item.item.type = self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].type
+                    self.drag_item.item.num = math.floor(self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num / 2)
+                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num = self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num - self.drag_item.item.num
+                elseif self.drag_num == ONE then
+                    self.drag_item.item = {}
+                    self.drag_item.item.type = self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].type
+                    self.drag_item.item.num = 1
+                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num = self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num - self.drag_item.item.num
+                end
+                self.inventory_selected.weight = self.inventory_selected.weight - self.drag_item.item.type.weight * self.drag_item.item.num
+                if self.drag_item.item.type.stack_limit ~= 1 then
+                    local num = cc.Label:createWithSystemFont(tostring(self.drag_item.item.num), font.GREEK_FONT, 20)
+                    num:setAnchorPoint(cc.p(0, 0))
+                    num:setPosition(cc.p(5, 0))
+                    self.drag_item:addChild(num)
+                end
+                if self.left_inventory:isVisible() == true then
+                    self.left_inventory.table_view:reloadData()
+                    self.left_inventory.weight:setString(self.minions[self.interact_target].inventory.weight.." / "..self.minions[self.interact_target].inventory.weight_limit)
+                end
+                self.right_inventory.table_view:reloadData()
+                self.right_inventory.weight:setString(self.m_character.inventory.weight.." / "..self.m_character.inventory.weight_limit)
+            end
+        end
+    end
+    if self.pause_flag == true then
+        return
+    end
     self.time = self.time + dt
     if self.light_status == DAWN and self.time >= DAWN_TIME then
         self.light_status = DAY
@@ -711,7 +759,7 @@ function SecondScene:step(dt)
     end
 
     if self.map_move_flag == RIGHT then
-        update_position(self, 1.0 * speed * dt * fixedDeltaTimeScale, 0.0)
+        update_position(self, self.m_character.speed * dt * fixedDeltaTimeScale, 0.0)
         if self.m_character.last_act ~= RIGHT then
             self.m_character.sprite:stopAllActions()
             self.m_character.sprite:playAnimationForever(display.getAnimationCache(minion_motions[RIGHT]))
@@ -719,7 +767,7 @@ function SecondScene:step(dt)
         end
     end
     if self.map_move_flag == LEFT then
-        update_position(self, 0.0 - 1.0 * speed * dt * fixedDeltaTimeScale, 0.0)
+        update_position(self, 0.0 - self.m_character.speed * dt * fixedDeltaTimeScale, 0.0)
         if self.m_character.last_act ~= LEFT then
             self.m_character.sprite:stopAllActions()
             self.m_character.sprite:playAnimationForever(display.getAnimationCache(minion_motions[LEFT]))
@@ -727,7 +775,7 @@ function SecondScene:step(dt)
         end
     end
     if self.map_move_flag == UP then
-        update_position(self, 0.0, 1.0 * speed * dt * fixedDeltaTimeScale)
+        update_position(self, 0.0, self.m_character.speed * dt * fixedDeltaTimeScale)
         if self.m_character.last_act ~= UP then
             self.m_character.sprite:stopAllActions()
             self.m_character.sprite:playAnimationForever(display.getAnimationCache(minion_motions[UP]))
@@ -735,7 +783,7 @@ function SecondScene:step(dt)
         end
     end
     if self.map_move_flag == DOWN then
-        update_position(self, 0.0, 0.0 - 1.0 * speed * dt * fixedDeltaTimeScale)
+        update_position(self, 0.0, 0.0 - self.m_character.speed * dt * fixedDeltaTimeScale)
         if self.m_character.last_act ~= DOWN then
             self.m_character.sprite:stopAllActions()
             self.m_character.sprite:playAnimationForever(display.getAnimationCache(minion_motions[DOWN]))
@@ -744,18 +792,34 @@ function SecondScene:step(dt)
     end
     if self.map_move_flag ~= STOP then
         self.map:move(display.cx - self.m_character.position.x, display.cy - self.m_character.position.y)
+        for i = 1, MAX_TASKS_NUM do
+            if self.m_character_task[i] ~= nil and self.m_character_task[i].stop_when_walking == true then
+                self.m_character_task[i].cancel(self, self.m_character_task[i].parameters)
+                self.m_character_task[i] = nil
+            end
+        end
     elseif self.m_character.last_act ~= STOP then
         self.m_character.sprite:stopAllActions()
         self.m_character.sprite:setSpriteFrame(display.getAnimationCache(minion_motions[self.m_character.last_act]):getFrames()[1]:getSpriteFrame())
         self.m_character.last_act = STOP
     end
 
-    self:m_check_surroundings()
+    for i = 1, MAX_TASKS_NUM do
+        if self.m_character_task[i] ~= nil then
+            local result, item = self.m_character_task[i].call_back(self, self.m_character_task[i].parameters)
+            if result == success then
+                self.m_character:add_item(item)
+                self.m_character_task[i] = nil
+            end
+        end
+    end
 
-    for i, minion in pairs(self.minions) do
-        self.minions[i].logic:think_about_life(self.m_character, self.minions, self.structs, self.light_status, self.map_build_index, i, dt)
-        self:detect_minion(i)
-        self:update_minion(i)
+    for i = 1, MAX_MINIONS_NUM do
+        if self.minions[i] ~= nil then
+            self.minions[i].logic:think_about_life(self.m_character, self.minions, self.structs, self.light_status, self.map_build_index, i, dt)
+            self:detect_minion(i)
+            self:update_minion(i)
+        end
     end
     for i, single_torch in pairs(self.torches) do
         self:detect_torch(i)
@@ -858,6 +922,7 @@ function SecondScene:onCreate()
     self.torches = {}
     self.minion_size = 1
     self.m_character = {}
+    self.m_character_task = {}
     self.screen_ratio = cc.p(1.0, 1.0)
     self.width = 0.0
     self.height = 0.0
@@ -887,12 +952,47 @@ function SecondScene:onCreate()
     self.c_node = {}
     self.last_character_interactions = {}
     self.last_object_interactions = {}
-    local playButton = cc.MenuItemImage:create("PlayButton.png", "PlayButton.png")
+    self.last_interactions = {}
+    self.pause_flag = false
+    self.interact_flag = false
+    self.interact_target = 0
+    self.inventory_layer = nil
+    self.left_inventory = nil
+    self.right_inventory = nil
+    self.inventory_init_pos = nil
+    self.inventory_selected = nil
+    self.inventory_block_selected = nil
+    self.hold_time = 0.0
+    self.drag_item = nil
+    self.drag_num_sprite = nil
+    self.plus = nil
+    self.minus = nil
+    self.chest_flag = false
+    local exitButton = cc.MenuItemImage:create("exit.png", "exit.png")
     :onClicked(function()
         self:getApp():enterScene("MainScene")
     end)
-    cc.Menu:create(playButton)
-    :move(display.right - 120, display.top - 50)
+    cc.Menu:create(exitButton)
+    :move(display.left + 75/2, display.top - 75/2)
+    :addTo(self, 100)
+
+    local inventory = cc.MenuItemImage:create("inventory.png", "inventory.png")
+    :onClicked(function()
+        if self.interact_flag == true then
+        else
+            if self.inventory_layer:isVisible() == false then
+                self.pause_flag = true
+                self.left_inventory:setVisible(false)
+                self.inventory_layer:setVisible(true)
+            else
+                self.pause_flag = false
+                self.left_inventory:setVisible(false)
+                self.inventory_layer:setVisible(false)
+            end
+        end
+    end)
+    cc.Menu:create(inventory)
+    :move(display.right - 25, display.top - 25)
     :addTo(self, 100)
 
     self.olo = cc.Label:createWithSystemFont("olo", font.GREEK_FONT, 50)
@@ -945,7 +1045,6 @@ function SecondScene:onCreate()
 
     self.resources_50 = cc.TMXTiledMap:create("background/resources_50.tmx")
 
-
     self:create_lb(1, "lb1", -100, 100)
     --self:create_lb(2, "lb1", -250, 750)
 
@@ -962,8 +1061,13 @@ function SecondScene:onCreate()
     self.m_character:set_map_characters(self.map_characters, 0, self.minions, self.m_character)
     self.m_character:set_position(self.width / 2, self.height / 2)
     self.m_character:change_position(0.0, 0.0, self.width / 2, self.height / 2)
-    self.m_character:set_name("Pandora", 0.1)
+    self.m_character:set_name("Pandora")
     self.m_character:add_shadow()
+    --[[
+    for i = 1, inventory_rows * inventory_cols do
+        self.m_character.inventory[i] = nil
+    end
+    ]]
 
     local touch_layer = display.newLayer()
     :addTo(self, 90)
@@ -977,23 +1081,99 @@ function SecondScene:onCreate()
                 if x < 150 and y < 150 then
                     if x + y <= 150 then
                         if x <= y then
-                            self.map_move_flag = LEFT
-                            return true
+                            if self.interact_flag == false then
+                                self.map_move_flag = LEFT
+                                return true
+                            else
+                                self.map_move_flag = STOP
+                                if self.interact_target ~= 0 then
+                                    self.left_inventory.table_view.elements = self.minions[self.interact_target].inventory
+                                    self.left_inventory.table_view:reloadData()
+                                    self.right_inventory.table_view:reloadData()
+                                    self.left_inventory.weight:setString(self.minions[self.interact_target].inventory.weight.." / "..self.minions[self.interact_target].inventory.weight_limit)
+                                    self.left_inventory.name:setString(self.minions[self.interact_target].name)
+                                    self.right_inventory.weight:setString(self.m_character.inventory.weight.." / "..self.m_character.inventory.weight_limit)
+                                    self.right_inventory.name:setString(self.m_character.name)
+                                    self.inventory_layer:setVisible(true)
+                                end
+                                return true
+                            end
                         else
-                            self.map_move_flag = DOWN
-                            return true
+                            if self.interact_flag == false then
+                                self.map_move_flag = DOWN
+                                return true
+                            else
+                                self.interact_flag = false
+                                self.pause_flag = false
+                                self.map_move_flag = STOP
+                                self.control:setTexture("control.png")
+                                self.inventory_layer:setVisible(false)
+                                return true
+                            end
                         end
                     else
                         if x <= y then
-                            self.map_move_flag = UP
-                            return true
+                            if self.interact_flag == false then
+                                self.map_move_flag = UP
+                                return true
+                            else
+                                self.map_move_flag = STOP
+                                return true
+                            end
                         else
-                            self.map_move_flag = RIGHT
-                            return true
+                            if self.interact_flag == false then
+                                self.map_move_flag = RIGHT
+                                return true
+                            else
+                                self.map_move_flag = STOP
+                                return true
+                            end
                         end
                     end
                 end
                 self.map_move_flag = STOP
+            end
+            if self.inventory_layer:isVisible() == true then
+                if self.left_inventory:isVisible() == true then
+                    local left = self.left_inventory.table_view:getPositionX()
+                    local right = self.left_inventory.table_view:getPositionX() + self.left_inventory.table_view:getContentSize().width
+                    local bottom = self.left_inventory.table_view:getPositionY()
+                    local top = self.left_inventory.table_view:getPositionY() + self.left_inventory.table_view:getContentSize().height
+                    if x >= left and x < right and y >= bottom and y < top and self.inventory_block_selected == nil and self.inventory_selected == nil then
+                        local local_inventory_rows
+                        if self.chest_flag == false then
+                            local_inventory_rows = inventory_rows
+                        else
+                            local_inventory_rows = inventory_rows_chest
+                        end
+                        local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                        local j = local_inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                        self.inventory_block_selected = cc.p(i, j)
+                        self.inventory_selected = self.minions[self.interact_target].inventory
+                        self.inventory_init_pos = touch:getLocation()
+                        self.hold_time = 0.0
+                        if self.drag_item ~= nil then
+                            self.drag_item:removeFromParentAndCleanup(true)
+                            self.drag_item = nil
+                        end
+                    end
+                end
+                local left = self.right_inventory.table_view:getPositionX()
+                local right = self.right_inventory.table_view:getPositionX() + self.right_inventory.table_view:getContentSize().width
+                local bottom = self.right_inventory.table_view:getPositionY()
+                local top = self.right_inventory.table_view:getPositionY() + self.right_inventory.table_view:getContentSize().height
+                if x >= left and x < right and y >= bottom and y < top and self.inventory_block_selected == nil and self.inventory_selected == nil then
+                    local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                    local j = inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                    self.inventory_block_selected = cc.p(i, j)
+                    self.inventory_selected = self.m_character.inventory
+                    self.inventory_init_pos = touch:getLocation()
+                    self.hold_time = 0.0
+                    if self.drag_item ~= nil then
+                        self.drag_item:removeFromParentAndCleanup(true)
+                        self.drag_item = nil
+                    end
+                end
             end
             return true
         end
@@ -1005,23 +1185,85 @@ function SecondScene:onCreate()
                 if x < 150 and y < 150 then
                     if x + y <= 150 then
                         if x <= y then
-                            self.map_move_flag = LEFT
-                            return
+                            if self.interact_flag == false then
+                                self.map_move_flag = LEFT
+                                return
+                            end
                         else
-                            self.map_move_flag = DOWN
-                            return
+                            if self.interact_flag == false then
+                                self.map_move_flag = DOWN
+                                return
+                            end
                         end
                     else
                         if x <= y then
-                            self.map_move_flag = UP
-                            return
+                            if self.interact_flag == false then
+                                self.map_move_flag = UP
+                                return
+                            end
                         else
-                            self.map_move_flag = RIGHT
-                            return
+                            if self.interact_flag == false then
+                                self.map_move_flag = RIGHT
+                                return
+                            end
                         end
                     end
                 end
                 self.map_move_flag = STOP
+            end
+            if self.drag_item ~= nil then
+                self.drag_item:move(touch:getLocation().x - 25, touch:getLocation().y - 25)
+            else
+                if self.inventory_layer:isVisible() == true then
+                    if self.left_inventory:isVisible() == true then
+                        local left = self.left_inventory.table_view:getPositionX()
+                        local right = self.left_inventory.table_view:getPositionX() + self.left_inventory.table_view:getContentSize().width
+                        local bottom = self.left_inventory.table_view:getPositionY()
+                        local top = self.left_inventory.table_view:getPositionY() + self.left_inventory.table_view:getContentSize().height
+                        if x >= left and x < right and y >= bottom and y < top then
+                            local local_inventory_rows
+                            if self.chest_flag == false then
+                                local_inventory_rows = inventory_rows
+                            else
+                                local_inventory_rows = inventory_rows_chest
+                            end
+                            local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                            local j = local_inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                            self.inventory_block_selected = cc.p(i, j)
+                            self.inventory_selected = self.minions[self.interact_target].inventory
+                            self.inventory_init_pos = touch:getLocation()
+                            local xx = touch.getPreviousLocation().x
+                            local yy = touch.getPreviousLocation().y
+                            if (xx - x) * (xx - x) + (yy - y) * (yy - y) >= 1.0 then
+                                self.hold_time = 0.0
+                            end
+                            if self.drag_item ~= nil then
+                                self.drag_item:removeFromParentAndCleanup(true)
+                                self.drag_item = nil
+                            end
+                        end
+                    end
+                    local left = self.right_inventory.table_view:getPositionX()
+                    local right = self.right_inventory.table_view:getPositionX() + self.right_inventory.table_view:getContentSize().width
+                    local bottom = self.right_inventory.table_view:getPositionY()
+                    local top = self.right_inventory.table_view:getPositionY() + self.right_inventory.table_view:getContentSize().height
+                    if x >= left and x < right and y >= bottom and y < top then
+                        local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                        local j = inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                        self.inventory_block_selected = cc.p(i, j)
+                        self.inventory_selected = self.m_character.inventory
+                        self.inventory_init_pos = touch:getLocation()
+                        local xx = touch.getPreviousLocation().x
+                        local yy = touch.getPreviousLocation().y
+                        if (xx - x) * (xx - x) + (yy - y) * (yy - y) >= 1.0 then
+                            self.hold_time = 0.0
+                        end
+                        if self.drag_item ~= nil then
+                            self.drag_item:removeFromParentAndCleanup(true)
+                            self.drag_item = nil
+                        end
+                    end
+                end
             end
             return
         end
@@ -1032,28 +1274,210 @@ function SecondScene:onCreate()
             if x >= 0 and x < 200 and y >= 0 and y < 200 then
                 self.map_move_flag = STOP
             end
+            if self.inventory_selected ~= nil and self.inventory_block_selected ~= nil and self.drag_item ~= nil then
+                if self.left_inventory:isVisible() == true then
+                    local left = self.left_inventory.table_view:getPositionX()
+                    local right = self.left_inventory.table_view:getPositionX() + self.left_inventory.table_view:getContentSize().width
+                    local bottom = self.left_inventory.table_view:getPositionY()
+                    local top = self.left_inventory.table_view:getPositionY() + self.left_inventory.table_view:getContentSize().height
+                    if x >= left and x < right and y >= bottom and y < top then
+                        local local_inventory_cols
+                        local local_inventory_rows
+                        if self.chest_flag == false then
+                            local_inventory_rows = inventory_rows
+                            local_inventory_cols = inventory_cols
+                        else
+                            local_inventory_rows = inventory_rows_chest
+                            local_inventory_cols = inventory_cols_chest
+                        end
+                        local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                        local j = local_inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                        if self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] == nil or self.left_inventory.table_view.elements[i + j * local_inventory_cols] == nil then
+                            if self.left_inventory.table_view.elements[i + j * local_inventory_cols] ~= nil then
+                                if self.left_inventory.table_view.elements[i + j * local_inventory_cols].type ~= self.drag_item.item.type then
+                                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] = self.left_inventory.table_view.elements[i + j * local_inventory_cols]
+                                    self.left_inventory.table_view.elements.weight = self.left_inventory.table_view.elements.weight - self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.weight * self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                                    self.inventory_selected.weight = self.inventory_selected.weight + self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.weight * self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                                else
+                                    self.drag_item.item.num = self.drag_item.item.num + self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                                    self.left_inventory.table_view.elements.weight = self.left_inventory.table_view.elements.weight - self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.weight * self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                                    if self.drag_item.item.num > self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.stack_limit then
+                                        local num = self.drag_item.item.num - self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.stack_limit
+                                        self.drag_item.item.num = self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.stack_limit
+                                        self.left_inventory.table_view.elements[i + j * local_inventory_cols].num = num
+                                        self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] = self.left_inventory.table_view.elements[i + j * local_inventory_cols]
+                                        self.inventory_selected.weight = self.inventory_selected.weight + self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.weight * self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                                    end
+                                end
+                            end
+                            self.left_inventory.table_view.elements[i + j * local_inventory_cols] = self.drag_item.item
+                            self.left_inventory.table_view.elements.weight = self.left_inventory.table_view.elements.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                        elseif self.left_inventory.table_view.elements[i + j * local_inventory_cols].type == self.drag_item.item.type and self.drag_item.item.num + self.left_inventory.table_view.elements[i + j * local_inventory_cols].num <= self.left_inventory.table_view.elements[i + j * local_inventory_cols].type.stack_limit then
+                            self.left_inventory.table_view.elements[i + j * local_inventory_cols].num = self.drag_item.item.num + self.left_inventory.table_view.elements[i + j * local_inventory_cols].num
+                            self.left_inventory.table_view.elements.weight = self.left_inventory.table_view.elements.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                        else
+                            self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num = self.drag_item.item.num + self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num
+                            self.inventory_selected.weight = self.inventory_selected.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                        end
+                    end
+                end
+                local left = self.right_inventory.table_view:getPositionX()
+                local right = self.right_inventory.table_view:getPositionX() + self.right_inventory.table_view:getContentSize().width
+                local bottom = self.right_inventory.table_view:getPositionY()
+                local top = self.right_inventory.table_view:getPositionY() + self.right_inventory.table_view:getContentSize().height
+                if x >= left and x < right and y >= bottom and y < top then
+                    local i = math.floor((touch:getLocation().x - left) / 50.0) + 1
+                    local j = inventory_rows - (math.floor((touch:getLocation().y - bottom) / 50.0) + 1)
+                    if self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * inventory_cols] == nil or self.right_inventory.table_view.elements[i + j * inventory_cols] == nil then
+                        if self.right_inventory.table_view.elements[i + j * inventory_cols] ~= nil then
+                            if self.right_inventory.table_view.elements[i + j * inventory_cols].type ~= self.drag_item.item.type then
+                                self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * inventory_cols] = self.right_inventory.table_view.elements[i + j * inventory_cols]
+                                self.right_inventory.table_view.elements.weight = self.right_inventory.table_view.elements.weight - self.right_inventory.table_view.elements[i + j * inventory_cols].type.weight * self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                                self.inventory_selected.weight = self.inventory_selected.weight + self.right_inventory.table_view.elements[i + j * inventory_cols].type.weight * self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                            else
+                                self.drag_item.item.num = self.drag_item.item.num + self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                                self.right_inventory.table_view.elements.weight = self.right_inventory.table_view.elements.weight - self.right_inventory.table_view.elements[i + j * inventory_cols].type.weight * self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                                if self.drag_item.item.num > self.right_inventory.table_view.elements[i + j * inventory_cols].type.stack_limit then
+                                    local num = self.drag_item.item.num - self.right_inventory.table_view.elements[i + j * inventory_cols].type.stack_limit
+                                    self.drag_item.item.num = self.right_inventory.table_view.elements[i + j * inventory_cols].type.stack_limit
+                                    self.right_inventory.table_view.elements[i + j * inventory_cols].num = num
+                                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * inventory_cols] = self.right_inventory.table_view.elements[i + j * inventory_cols]
+                                    self.inventory_selected.weight = self.inventory_selected.weight + self.right_inventory.table_view.elements[i + j * inventory_cols].type.weight * self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                                end
+                            end
+                        end
+                        self.right_inventory.table_view.elements[i + j * inventory_cols] = self.drag_item.item
+                        self.right_inventory.table_view.elements.weight = self.right_inventory.table_view.elements.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                    elseif self.right_inventory.table_view.elements[i + j * inventory_cols].type == self.drag_item.item.type and self.drag_item.item.num + self.right_inventory.table_view.elements[i + j * inventory_cols].num <= self.right_inventory.table_view.elements[i + j * inventory_cols].type.stack_limit then
+                        self.right_inventory.table_view.elements[i + j * inventory_cols].num = self.drag_item.item.num + self.right_inventory.table_view.elements[i + j * inventory_cols].num
+                        self.right_inventory.table_view.elements.weight = self.right_inventory.table_view.elements.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                    else
+                        self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * inventory_cols].num = self.drag_item.item.num + self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * inventory_cols].num
+                        self.inventory_selected.weight = self.inventory_selected.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                    end
+                end
+                if self.left_inventory:isVisible() == true then
+                    self.left_inventory.table_view:reloadData()
+                    self.left_inventory.weight:setString(self.left_inventory.table_view.elements.weight.." / "..self.left_inventory.table_view.elements.weight_limit)
+                end
+                self.right_inventory.table_view:reloadData()
+                self.right_inventory.weight:setString(self.right_inventory.table_view.elements.weight.." / "..self.right_inventory.table_view.elements.weight_limit)
+            end
+            self.inventory_selected = nil
+            self.inventory_block_selected = nil
+            self.hold_time = 0.0
+            if self.drag_item ~= nil then
+                self.drag_item:removeFromParentAndCleanup(true)
+                self.drag_item = nil
+            end
             return
         end
         ,cc.Handler.EVENT_TOUCH_ENDED)
     listener:registerScriptHandler(
         function(touch, event)
-            release_print("cancelled")
             self.map_move_flag = STOP
+            if self.inventory_selected ~= nil and self.inventory_block_selected ~= nil and self.drag_item ~= nil then
+                local local_inventory_cols = inventory_cols
+                if self.chest_flag == true and self.inventory_selected ~= self.m_character.inventory then
+                    local_inventory_cols = inventory_cols_chest
+                end
+                if self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] == nil then
+                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols] = self.drag_item.item
+                else
+                    self.inventory_selected[self.inventory_block_selected.x + self.inventory_block_selected.y * local_inventory_cols].num = self.drag_item.item.num
+                end
+                self.inventory_selected.weight = self.inventory_selected.weight + self.drag_item.item.type.weight * self.drag_item.item.num
+                if self.left_inventory:isVisible() == true then
+                    self.left_inventory.table_view:reloadData()
+                    self.left_inventory.weight:setString(self.minions[self.interact_target].inventory.weight.." / "..self.minions[self.interact_target].inventory.weight_limit)
+                end
+                self.right_inventory.table_view:reloadData()
+                self.right_inventory.weight:setString(self.m_character.inventory.weight.." / "..self.m_character.inventory.weight_limit)
+            end
+            self.inventory_selected = nil
+            self.inventory_block_selected = nil
+            self.hold_time = 0.0
+            if self.drag_item ~= nil then
+                self.drag_item:removeFromParentAndCleanup(true)
+                self.drag_item = nil
+            end
             return
         end
         ,cc.Handler.EVENT_TOUCH_CANCELLED)
 
-    local control = display.newSprite("control.png")
+    self.control = display.newSprite("control.png")
     :setAnchorPoint(0.0, 0.0)
     :move(display.left, display.bottom)
     :addTo(touch_layer)
-    control:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener,control)
+    self.control:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, self.control)
 
-    self.interactions = require("app.views.interactions").new(true, {}, display.right, 0, cc.size(75*6, 75), cc.p(75, 75), kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown, self)
+    self.interactions = require("app.views.interactions").new(true, self.last_interactions, display.right, 0, cc.size(75*6, 75), cc.p(75, 75), kCCScrollViewDirectionHorizontal, kCCTableViewFillTopDown, self)
     self.interactions:setAnchorPoint(cc.p(0, 0))
     self.interactions:setPosition(cc.p(0, 0))
     self:addChild(self.interactions, 90)
     self.interactions_position_x = display.right
+
+    self.inventory_layer = display.newLayer()
+    :addTo(self, 90)
+
+    self.drag_num_sprite = display.newSprite("full.png")
+    :move(display.cx, display.cy)
+    :addTo(self.inventory_layer)
+
+    self.plus = cc.MenuItemImage:create("plus.png", "plus.png")
+    :onClicked(function()
+        if self.drag_num ~= FULL then
+            self.drag_num = self.drag_num + 1
+            if self.drag_num == HALF then
+                self.drag_num_sprite:setTexture("half.png")
+            else
+                self.drag_num_sprite:setTexture("full.png")
+            end
+        end
+    end)
+    cc.Menu:create(self.plus)
+    :move(display.cx, display.cy + 75)
+    :addTo(self.inventory_layer)
+
+    self.minus = cc.MenuItemImage:create("minus.png", "minus.png")
+    :onClicked(function()
+        if self.drag_num ~= ONE then
+            self.drag_num = self.drag_num - 1
+            if self.drag_num == HALF then
+                self.drag_num_sprite:setTexture("half.png")
+            else
+                self.drag_num_sprite:setTexture("one.png")
+            end
+        end
+    end)
+    cc.Menu:create(self.minus)
+    :move(display.cx, display.cy - 75)
+    :addTo(self.inventory_layer)
+
+    self.drag_num = FULL
+
+    --[[
+    self.chest_flag = true
+    self.left_inventory = require("app.views.inventory_view").new(false, {}, 100, display.cy - inventory_rows_chest * 50 / 2, inventory_cols_chest, inventory_rows_chest, cc.size(inventory_cols_chest * 50, inventory_rows_chest * 50), cc.p(50, 50), kCCScrollViewDirectionVertical, kCCTableViewFillTopDown, self)
+    :setAnchorPoint(cc.p(0, 0))
+    :setPosition(cc.p(0, 0))
+    :addTo(self.inventory_layer)
+    ]]
+
+    self.left_inventory = require("app.views.inventory_view").new(false, {}, 100, display.cy - inventory_rows * 50 / 2, inventory_cols, inventory_rows, cc.size(inventory_cols * 50, inventory_rows * 50), cc.p(50, 50), kCCScrollViewDirectionVertical, kCCTableViewFillTopDown, self)
+    :setAnchorPoint(cc.p(0, 0))
+    :setPosition(cc.p(0, 0))
+    :addTo(self.inventory_layer)
+
+    self.right_inventory = require("app.views.inventory_view").new(false, self.m_character.inventory, display.right - 100 - inventory_cols * 50, display.cy - inventory_rows * 50 / 2, inventory_cols, inventory_rows, cc.size(inventory_cols * 50, inventory_rows * 50), cc.p(50, 50), kCCScrollViewDirectionVertical, kCCTableViewFillTopDown, self)
+    :setAnchorPoint(cc.p(0, 0))
+    :setPosition(cc.p(0, 0))
+    :addTo(self.inventory_layer)
+    self.right_inventory.table_view:reloadData()
+    self.right_inventory.weight:setString(self.m_character.inventory.weight.." / "..self.m_character.inventory.weight_limit)
+    self.right_inventory.name:setString(self.m_character.name)
+
+    self.inventory_layer:setVisible(false)
 
     self.time = DAWN_TIME
     self.light_status = DAY

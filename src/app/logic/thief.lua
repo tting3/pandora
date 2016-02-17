@@ -27,8 +27,9 @@ local thief = {
     stalking_target = nil,
     path = nil,
     patrol = nil,
-    patrol_init = function(self, target_structs)
-        self.targets_list = {identity.slave_farm}
+    last_seen = nil,
+    patrol_init = function(self, target_structs, new_targets_list)
+        self.targets_list = new_targets_list
         self.patrol = patrol:new()
         self.patrol.target_structs = target_structs
         self.patrol.target_wait_time = 0.0
@@ -127,33 +128,46 @@ local thief = {
             end
         end
         if self.steal_status == STALKING then
+            local stalking_character
+            if self.stalking_target ~= 0 then
+                stalking_character = minions[self.stalking_target]
+            else
+                stalking_character = m_character
+            end
             if self.path == nil then
                 self.path = cal_shortest_dis:new()
                 self.path.points[self.path.point_index] = minions[index].position
-                if self.stalking_target ~= 0 then
-                    self.path.dest = minions[self.stalking_target].position
-                else
-                    self.path.dest = m_character.position
-                end
             end
-            if self.stalking_target ~= 0 then
-                local dis = (minions[self.stalking_target].position.x - minions[index].position.x) * (minions[self.stalking_target].position.x - minions[index].position.x) + (minions[self.stalking_target].position.y - minions[index].position.y) * (minions[self.stalking_target].position.y - minions[index].position.y)
-                if minions[self.stalking_target].height_level > minions[index].height_level or dis > 50*5*50*5 then
-                    self.path = nil
-                    self.steal_status = FINDING_TARGET
-                    return working
+            if self.last_seen == nil then
+                local dis = (stalking_character.position.x - minions[index].position.x) * (stalking_character.position.x - minions[index].position.x) + (stalking_character.position.y - minions[index].position.y) * (stalking_character.position.y - minions[index].position.y)
+                if stalking_character.height_level > minions[index].height_level or dis > 50*5*50*5 then
+                    self.last_seen = stalking_character.position
                 end
             else
-                local dis = (m_character.position.x - m_character.position.x) * (m_character.position.x - m_character.position.x) + (m_character.position.y - m_character.position.y) * (m_character.position.y - m_character.position.y)
-                if m_character.height_level > m_character.height_level or dis > 50*5*50*5 then
-                    self.path = nil
-                    self.steal_status = FINDING_TARGET
-                    return working
+                local dis = (stalking_character.position.x - minions[index].position.x) * (stalking_character.position.x - minions[index].position.x) + (stalking_character.position.y - minions[index].position.y) * (stalking_character.position.y - minions[index].position.y)
+                if stalking_character.height_level <= minions[index].height_level and dis <= 50*5*50*5 then
+                    self.last_seen = nil
                 end
             end
-            if self.path:cal(minions, structs, map, index, dt) == true then
-                self.path = nil
+            if self.last_seen == nil then
+                self.path.dest = stalking_character.position
+            else
+                self.path.dest = self.last_seen
             end
+            if self.path:cal(minions, structs, map, index, dt) == true then
+                if self.last_seen ~= nil then
+                    self.last_seen = nil
+                    self.path = nil
+                    self.steal_status = FINDING_TARGET
+                else
+                    self.last_seen = nil
+                    self.path = nil
+                    self.steal_status = STEALING
+                end
+            end
+        end
+        if self.steal_status == STEALING then
+            self.steal_status = FINDING_TARGET
         end
         return working
     end
@@ -170,6 +184,7 @@ function thief:new(o)
     o.stalking_target = nil
     o.path = nil
     o.patrol = nil
+    o.last_seen = nil
     return o
 end
 

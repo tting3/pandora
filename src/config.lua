@@ -6,7 +6,7 @@ DEBUG = 0
 CC_USE_FRAMEWORK = true
 
 -- show FPS on screen
-CC_SHOW_FPS = true
+CC_SHOW_FPS = false
 
 -- disable create unexpected global variable
 CC_DISABLE_GLOBAL = true

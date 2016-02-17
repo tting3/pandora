@@ -11,6 +11,8 @@ local DOWN = 0
 local LEFT = 1
 local RIGHT = 2
 local UP = 3
+local inventory_cols = 6
+local inventory_rows = 4
 
 local font = require("app.views.font")
 local identity = require("app.logic.identity")
@@ -36,10 +38,18 @@ local character = {
     id = identity.free_folk,
     hp = 100,
     hunger = 0,
-    inventory = {},
+    speed = 2.0,
     left_hand = nil,
     right_hand = nil,
+    head = nil,
     armor = nil,
+    skills = {
+        thief = 0,
+        fight = 0,
+        heal = 0,
+        craft = 0
+    },
+    inventory = {},
     set_position = function(self, x, y)
         self.position = cc.p(x, y)
     end,
@@ -178,7 +188,7 @@ local character = {
             self.sprite:move(self.position.x - sx + display.cx, self.position.y - sy + display.cy + 25)
         end
     end,
-    set_name = function(self, name, anchor_x)
+    set_name = function(self, name)
         self.name = name
         if self.sprite ~= nil and name ~= "" then
             if self.name_txt ~= nil then
@@ -186,8 +196,8 @@ local character = {
                 self.name_txt = nil
             end
             self.name_txt = cc.Label:createWithSystemFont(self.name, font.GREEK_FONT, 20)
+                :move(25, 65)
                 :setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-                :setAnchorPoint(anchor_x, -1.5)
                 :setTextColor(font.BLACK)
                 :addTo(self.sprite)
         end
@@ -238,6 +248,29 @@ local character = {
         self.map_characters[new_i][new_j][1] = num
         self.last_map_index = num + 1
         self.map_characters[new_i][new_j][num + 1] = self.index
+    end,
+    add_item = function(self, item)
+        local nil_marker = 0
+        for i = 1, inventory_cols * inventory_rows do
+            if self.inventory[i] == nil and nil_marker == 0 then
+                nil_marker = i
+            end
+            if self.inventory[i] ~= nil and self.inventory[i].type == item.type then
+                local diff = self.inventory[i].type.stack_limit - self.inventory[i].num
+                if diff < item.num then
+                    item.num = item.num - diff
+                    self.inventory[i].num = self.inventory[i].num + diff
+                else
+                    self.inventory[i].num = self.inventory[i].num + item.num
+                    return true
+                end
+            end
+        end
+        if nil_marker ~= 0 then
+            self.inventory[nil_marker] = item
+            return true
+        end
+        return false
     end
 }
 
@@ -263,7 +296,18 @@ function character:new(o)
     o.index = 0
     o.hp = 100
     o.hunger = 0
+    o.speed = 2.0
+    o.left_hand = nil
+    o.right_hand = nil
+    o.head = nil
+    o.armor = nil
     o.inventory = {}
+    o.inventory.weight = 0
+    o.inventory.weight_limit = 100
+    o.skills.thief = 0
+    o.skills.fight = 0
+    o.skills.heal = 0
+    o.skills.craft = 0
     return o
 end
 

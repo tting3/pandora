@@ -12,7 +12,6 @@ local RIGHT = 2
 local UP = 3
 local CLOCK = 0
 local C_CLOCK = 1
-local speed = 2.0
 local fixedDeltaTimeScale = 60.0
 
 local cal_shortest_dis_new = {
@@ -28,7 +27,7 @@ local cal_shortest_dis_new = {
         local x = self.dest.x - minions[index].position.x
         local y = self.dest.y - minions[index].position.y
         local root = math.sqrt(x * x + y * y)
-        if root < 2.0 then
+        if root <= 2.0 then
             if minions[index].position.x ~= self.points[self.point_index].x or minions[index].position.y ~= self.points[self.point_index].y then
                 self.points[self.point_index + 1] = minions[index].position
                 self.points_valid[self.point_index] = true
@@ -45,18 +44,18 @@ local cal_shortest_dis_new = {
             ]]
             local new_x = 0.0
             local new_y = 0.0
-            if (math.abs(x) < math.abs(y) and math.abs(x) > 2.0) or math.abs(y) < 2.0 then
+            if (math.abs(x) < math.abs(y) and math.abs(x) > minions[index].speed) or math.abs(y) < minions[index].speed then
                 if x > 0.0 then
-                    new_x = speed
+                    new_x = minions[index].speed
                 else
-                    new_x = 0.0 - speed
+                    new_x = 0.0 - minions[index].speed
                 end
                 new_y = 0.0
             else
                 if y > 0.0 then
-                    new_y = speed
+                    new_y = minions[index].speed
                 else
-                    new_y = 0.0 - speed
+                    new_y = 0.0 - minions[index].speed
                 end
             end
             if new_x > 0 then
@@ -319,29 +318,29 @@ local cal_shortest_dis_new = {
                             --minions[index]:set_name(table.getn(self.points).."", -5.0)
                             if self.direction == CLOCK then
                                 if self.pos_dir == DOWN then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                 end
                                 if self.pos_dir == LEFT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == UP then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == RIGHT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - minions[index].speed)
                                 end
                             elseif self.direction == C_CLOCK then
                                 if self.pos_dir == DOWN then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                 end
                                 if self.pos_dir == LEFT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - minions[index].speed)
                                 end
                                 if self.pos_dir == UP then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == RIGHT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                             end
                             self.points_valid[point_index] = true
@@ -356,29 +355,29 @@ local cal_shortest_dis_new = {
                             --minions[index]:set_name(table.getn(self.points).."", 0.0)
                             if self.direction == CLOCK then
                                 if self.pos_dir == DOWN then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                 end
                                 if self.pos_dir == LEFT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == UP then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == RIGHT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - minions[index].speed)
                                 end
                             elseif self.direction == C_CLOCK then
                                 if self.pos_dir == DOWN then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                 end
                                 if self.pos_dir == LEFT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - minions[index].speed)
                                 end
                                 if self.pos_dir == UP then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                                 if self.pos_dir == RIGHT then
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                 end
                             end
                             self.points[point_index + 2] = self.dest
@@ -394,7 +393,7 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("DOWN", 0.0)
                                 if check(i - 1, j + 1) then
                                     if check(i - 1, j) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                         self.points_valid[point_index] = true
                                         self.pos_dir = LEFT
                                         --minions[index]:set_name(minions[index].position.x.."", 0.0)
@@ -405,9 +404,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i - 1 + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j - 1) * struct.tile.y)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i - 1 + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j - 1) * struct.tile.y)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = RIGHT
                                     find_points(i - 1, j + 1, point_index + 2)
@@ -418,9 +417,9 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("LEFT", 0.0)
                                 if check(i - 1, j - 1) then
                                     if check(i, j - 1) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                         self.points_valid[point_index] = true
-                                        --minions[index]:set_name(self.points[point_index + 1].x.." "..self.points[point_index + 1].y, 2.0)
+                                        --minions[index]:set_name(self.points[point_index + 1].x.." "..self.points[point_index + 1].y, minions[index].speed)
                                         self.pos_dir = UP
                                         find_points(i, j, point_index + 1)
                                         return
@@ -429,7 +428,7 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j + 1) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j + 1) * struct.tile.y)
                                     self.points_valid[point_index] = true
                                     self.points[point_index + 2] = cc.p(struct.position.x + (i - 1) * struct.tile.x, struct.position.y + (struct.map.y - 1 - j + 1) * struct.tile.y)
                                     self.points_valid[point_index + 1] = true
@@ -442,7 +441,7 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("UP", 0.0)
                                 if check(i + 1, j - 1) then
                                     if check(i + 1, j) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                         self.points_valid[point_index] = true
                                         --minions[index]:set_name("UP", -10.0)
                                         self.pos_dir = RIGHT
@@ -453,9 +452,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 1) * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j + 1) * struct.tile.y)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 1) * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j + 1) * struct.tile.y)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = LEFT
                                     find_points(i + 1, j - 1, point_index + 2)
@@ -466,7 +465,7 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("RIGHT", 0.0)
                                 if check(i + 1, j + 1) then
                                     if check(i, j + 1) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y - minions[index].speed)
                                         self.points_valid[point_index] = true
                                         self.pos_dir = DOWN
                                         find_points(i, j, point_index + 1)
@@ -476,9 +475,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = UP
                                     find_points(i + 1, j + 1, point_index + 2)
@@ -492,7 +491,7 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("DOWN", 0.0)
                                 if check(i + 1, j + 1) then
                                     if check(i + 1, j) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                         self.points_valid[point_index] = true
                                         self.pos_dir = RIGHT
                                         find_points(i, j, point_index + 1)
@@ -502,9 +501,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 1) * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j - 1) * struct.tile.y)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 1) * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j - 1) * struct.tile.y)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = LEFT
                                     find_points(i + 1, j + 1, point_index + 2)
@@ -515,9 +514,9 @@ local cal_shortest_dis_new = {
                                 --minions[index]:set_name("LEFT", 0.0)
                                 if check(i - 1, j + 1) then
                                     if check(i, j + 1) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j - 1) * struct.tile.y - minions[index].speed)
                                         self.points_valid[point_index] = true
-                                        --minions[index]:set_name(self.points[point_index + 1].x.." "..self.points[point_index + 1].y, 2.0)
+                                        --minions[index]:set_name(self.points[point_index + 1].x.." "..self.points[point_index + 1].y, minions[index].speed)
                                         self.pos_dir = DOWN
                                         find_points(i, j, point_index + 1)
                                         return
@@ -526,9 +525,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i - 1) * struct.tile.x, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i - 1) * struct.tile.x, struct.position.y + (struct.map.y - 1 - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = UP
                                     find_points(i - 1, j + 1, point_index + 2)
@@ -538,7 +537,7 @@ local cal_shortest_dis_new = {
                             if self.pos_dir == UP then
                                 if check(i - 1, j - 1) then
                                     if check(i - 1, j) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x - minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                         self.points_valid[point_index] = true
                                         self.pos_dir = LEFT
                                         find_points(i, j, point_index + 1)
@@ -548,9 +547,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + i * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + i * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j + 1) * struct.tile.y)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + i * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j + 1) * struct.tile.y)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = RIGHT
                                     find_points(i - 1, j - 1, point_index + 2)
@@ -560,7 +559,7 @@ local cal_shortest_dis_new = {
                             if self.pos_dir == RIGHT then
                                 if check(i + 1, j - 1) then
                                     if check(i, j - 1) == true then
-                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y + 2.0)
+                                        self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y + minions[index].speed)
                                         self.points_valid[point_index] = true
                                         self.pos_dir = UP
                                         find_points(i, j, point_index + 1)
@@ -570,9 +569,9 @@ local cal_shortest_dis_new = {
                                         return
                                     end
                                 else
-                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + 2.0, struct.position.y + (struct.map.y - j) * struct.tile.y - 2.0)
+                                    self.points[point_index + 1] = cc.p(struct.position.x + (i + 1) * struct.tile.x + minions[index].speed, struct.position.y + (struct.map.y - j) * struct.tile.y - minions[index].speed)
                                     self.points_valid[point_index] = true
-                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - j) * struct.tile.y - 2.0)
+                                    self.points[point_index + 2] = cc.p(struct.position.x + (i + 2) * struct.tile.x, struct.position.y + (struct.map.y - j) * struct.tile.y - minions[index].speed)
                                     self.points_valid[point_index + 1] = true
                                     self.pos_dir = DOWN
                                     find_points(i + 1, j - 1, point_index + 2)
