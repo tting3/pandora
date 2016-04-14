@@ -16,7 +16,7 @@ function MainScene:onCreate()
     :move(display.cx, display.cy - 200)
     :addTo(self)
 
-    cc.Label:createWithSystemFont("lol", font.GREEK_FONT, 100)
+    cc.Label:createWithTTF("lol", font.GREEK_FONT, 100)
     :setTextColor(font.YELLOW)
     :align(display.CENTER, display.center)
     :addTo(self)

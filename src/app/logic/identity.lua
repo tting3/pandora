@@ -7,11 +7,11 @@
 --
 
 local identity = {
-    slave_farm = 0,
-    slave_dispose = 1,
-    free_folk = 2,
-    labor = 3,
-    bussiness_guy = 4
+    slave = 0,
+    free_folk = 1,
+    guard = 2,
+    officer = 3,
+    king = 4
 }
 
 return identity

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="18" height="23" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="7">
+  <image source="collision.png" width="350" height="50"/>
+ </tileset>
+ <tileset firstgid="8" name="temple" tilewidth="50" tileheight="50" tilecount="3072">
+  <image source="temple.png" width="3200" height="2400"/>
+ </tileset>
+ <layer name="collision" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGAWjgHLASCbGZg45do+aM2rOYDUHG2aDYmLzxXADAH6B65x4BgAA
+  </data>
+ </layer>
+ <layer name="floor" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+2TWW7CMBBA/ZEiVAIUTlWRheVUVEAQnCpIVdkuxLOIxTAdR/y3kZ7s8dhPYzt27v/7i9/yzbmvxLkZ9CCFPgxU3DPyQxjBHkfdeCaQQQ4FlCrOjPwUdnDB8Zk8PCtYwwYqFa+EQ7q8Z9xhX8KTt1AYcfAs8NTKs46waVrTk/yuJ+SrZv96L5Znnzyfj/aEs8xe8MTqKVWs179Sj3We1lhbPfKsr+7ebsXYNuKR9ej7CR45FvMsDU/4D62+HKvEvct69NvRsfW+ZD0HOMHR4Bt+Ijm/5gwX6PLGhvABI6NNYSDm6NbPGft3Cu8teE8JU5jBvOnLeAE32wYKY3gGAAA=
+  </data>
+ </layer>
+ <layer name="back" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGAWkABE2VJpYOXQwjwmVJlYOHZxhQ6WJlUMHPOyoNLFy6MCHHZUmVm4UjIJRMHIAAPz14uV4BgAA
+  </data>
+ </layer>
+ <layer name="front" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGAXEABE26uiZx0S6Odj0nCHDPdj08LCTbg42PcM1fIarv6gd7+g0qWpgfkWnSVUD8yuI/sCF4H8Gsr9wIeS+c6GqRQcwv4JoA24E3xjINuFGyJlzo6pFBz7sCLqAG8EvBrJLuBFy5dyoaoc7AACRBSSoeAYAAA==
+  </data>
+ </layer>
+</map>

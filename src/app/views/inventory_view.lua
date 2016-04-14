@@ -78,12 +78,12 @@ function inventory_view:onEnter(bounceable, new_elements, x ,y, cols, rows, size
     self.inventory_bg:drawSolidRect(cc.p(x, y + item_size.y * rows), cc.p(x + item_size.x * cols, y + item_size.y * rows + 80), cc.c4f(0,0,0,150/255))
     self:addChild(self.inventory_bg)
 
-    self.weight = cc.Label:createWithSystemFont("", font.GREEK_FONT, 30)
+    self.weight = cc.Label:createWithTTF("", font.GREEK_FONT, 30)
     self.weight:setAnchorPoint(cc.p(0.5, 0))
     self.weight:setPosition(cc.p(x + item_size.x * cols / 2, y + item_size.y * rows))
     self:addChild(self.weight)
 
-    self.name = cc.Label:createWithSystemFont("", font.GREEK_FONT, 30)
+    self.name = cc.Label:createWithTTF("", font.GREEK_FONT, 30)
     self.name:setAnchorPoint(cc.p(0.5, 0))
     self.name:setPosition(cc.p(x + item_size.x * cols / 2, y + item_size.y * rows + 30))
     self:addChild(self.name)

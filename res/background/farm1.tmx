@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="5" tilewidth="50" tileheight="50" nextobjectid="1">
- <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="5">
-  <image source="collision.png" width="250" height="50"/>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="11" height="11" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="7">
+  <image source="collision.png" width="350" height="50"/>
  </tileset>
- <tileset firstgid="6" name="farm" tilewidth="50" tileheight="50" tilecount="260">
+ <tileset firstgid="8" name="farm" tilewidth="50" tileheight="50" tilecount="260">
   <image source="RPGpack_sheet.png" width="1000" height="650"/>
  </tileset>
- <layer name="collision" width="5" height="5">
+ <tileset firstgid="268" name="grass" tilewidth="50" tileheight="50" tilecount="36">
+  <image source="grass.png" width="300" height="300"/>
+ </tileset>
+ <tileset firstgid="304" name="dirt" tilewidth="50" tileheight="50" tilecount="4">
+  <image source="dirt.png" width="100" height="100"/>
+ </tileset>
+ <layer name="collision" width="11" height="11">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgYGBghGJaAQA5aJRWZAAAAA==
+   H4sIAAAAAAAAC2NgIB0wQvEoGBoAAPif9UDkAQAA
   </data>
  </layer>
- <layer name="grass" width="5" height="5">
+ <layer name="dirt" width="11" height="11">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NjYGBgR8IcQCwFxNJIWAYqxgnEXGhiskAshySmB8T6SNgAiAE90oz5ZAAAAA==
+   H4sIAAAAAAAAC2NgoC0wYGRgMGSE0OgYJI4MjIB8Y0YIjawGJo7LXCNGVD42cw2IVIushhhzjZDch+xmXGqNcfgRWzgYo6nHFg7EAABW8Thb5AEAAA==
   </data>
  </layer>
- <layer name="plants" width="5" height="5">
+ <layer name="grass" width="11" height="11">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgwA52IWFSxdABAJYohWxkAAAA
+   H4sIAAAAAAAAC5WQSwqAMAxE073fCupGN1Xw13r/2znFCkMQwcIjGZqZQET+vcyI5KAAJahedG3uWYvagAA82BMh0YIuzfbUP3ogbUlbNRu1U173kau9nKt3ai/n6p3sHUnHflV/7J1Ix35WN+XbLpS1pXseVD3dN3KCCwrRVGbkAQAA
   </data>
  </layer>
- <layer name="fences" width="5" height="5">
+ <layer name="plants" width="11" height="11">
   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAC2NgYGB4AcRXGGgHAKkh7TtkAAAA
+   H4sIAAAAAAAAC2NgGFxgDxTj4o8UtdQEAPkTaY/kAQAA
+  </data>
+ </layer>
+ <layer name="fences" width="11" height="11">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgIB28AuJrZOgbBQMDAB4rdHLkAQAA
   </data>
  </layer>
 </map>

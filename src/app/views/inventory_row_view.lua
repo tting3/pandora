@@ -46,10 +46,39 @@ function inventory_row_view.tableCellAtIndex(table, idx)
         item_bg:setPosition(cc.p(0, 0))
         cell:addChild(item_bg)
         if table.elements[idx + 1 + table.cols * table.row_index].type.stack_limit ~= 1 then
-            local num = cc.Label:createWithSystemFont(tostring(table.elements[idx + 1 + table.cols * table.row_index].num), font.GREEK_FONT, 20)
+            local num = cc.Label:createWithTTF(tostring(table.elements[idx + 1 + table.cols * table.row_index].num), font.GREEK_FONT, 20)
             num:setAnchorPoint(cc.p(0, 0))
             num:setPosition(cc.p(5, 0))
             cell:addChild(num)
+        end
+        if table.elements[idx + 1 + table.cols * table.row_index].heat_level ~= nil and table.elements[idx + 1 + table.cols * table.row_index].heat_level ~= 0 then
+            if table.elements[idx + 1 + table.cols * table.row_index].heat_level < 100 then
+                local heat_level = cc.DrawNode:create()
+                heat_level:drawSolidRect(cc.p(0, 0), cc.p(table.item_size.x, table.elements[idx + 1 + table.cols * table.row_index].heat_level / 100.0 * table.item_size.y), font.HEAT1)
+                cell:addChild(heat_level)
+            else
+                local heat_level = cc.DrawNode:create()
+                heat_level:drawSolidRect(cc.p(0, 0), cc.p(table.item_size.x, table.item_size.y), font.HEAT1)
+                cell:addChild(heat_level)
+                local heat_level = cc.DrawNode:create()
+                heat_level:drawSolidRect(cc.p(0, 0), cc.p(table.item_size.x, (table.elements[idx + 1 + table.cols * table.row_index].heat_level - 100) / 100.0 * table.item_size.y), font.HEAT2)
+                cell:addChild(heat_level)
+            end
+        end
+        if table.elements[idx + 1 + table.cols * table.row_index].equipped ~= nil then
+            if table.elements[idx + 1 + table.cols * table.row_index].equipped == 0 then
+                local equipped = cc.DrawNode:create()
+                for depth = 1, 4 do
+                    equipped:drawRect(cc.p(depth, depth), cc.p(table.item_size.x - depth, table.item_size.y - depth), font.RIGHT_SELECT)
+                end
+                cell:addChild(equipped)
+            elseif table.elements[idx + 1 + table.cols * table.row_index].equipped == 1 then
+                local equipped = cc.DrawNode:create()
+                for depth = 1, 4 do
+                    equipped:drawRect(cc.p(depth, depth), cc.p(table.item_size.x - depth, table.item_size.y - depth), font.LEFT_SELECT)
+                end
+                cell:addChild(equipped)
+            end
         end
     else
         local table_bg = display.newSprite("object/block.png")

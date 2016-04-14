@@ -47,7 +47,7 @@ function interactions.tableCellAtIndex(table, idx)
         cell:addChild(item_bg)
     end
     if table.elements[idx+1].label ~= nil then
-        local label = cc.Label:createWithSystemFont(table.elements[idx+1].label, font.GREEK_FONT, 30)
+        local label = cc.Label:createWithTTF(table.elements[idx+1].label, font.GREEK_FONT, 30)
         label:setTextColor(font.BLACK)
         label:setAnchorPoint(cc.p(0.5, 0.5))
         label:setPosition(cc.p(table.item_size.x / 2, table.item_size.y / 2))

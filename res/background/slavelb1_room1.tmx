@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="9" height="6" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="7">
+  <image source="collision.png" width="350" height="50"/>
+ </tileset>
+ <tileset firstgid="8" name="room" tilewidth="50" tileheight="50" tilecount="40">
+  <image source="room.png" width="500" height="200"/>
+ </tileset>
+ <tileset firstgid="48" name="beds" tilewidth="50" tileheight="50" tilecount="96">
+  <image source="beds.png" width="600" height="400"/>
+ </tileset>
+ <layer name="collision" width="9" height="6">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgYGBgxINhAJnNgEOc3mqQMQsDqpsBpKjNZNgAAAA=
+  </data>
+ </layer>
+ <layer name="floor" width="9" height="6">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgIB5IArEUEEsj0ehAGYhVgFgViUYHukCsB8T6SDQ2NSpIdmJTgw8AABzJ2DrYAAAA
+  </data>
+ </layer>
+ <layer name="entrance" width="9" height="6">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGPyAnww9AOVhB7rYAAAA
+  </data>
+ </layer>
+ <layer name="beds" width="9" height="6">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgoC6Iw4IpNYeBgXRzAK+lUXzYAAAA
+  </data>
+ </layer>
+ <layer name="beds_deco" width="9" height="6">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgIB4EYcHkAHT95JqDDwAAGDog4NgAAAA=
+  </data>
+ </layer>
+</map>

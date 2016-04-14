@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="18" height="23" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="temple" tilewidth="50" tileheight="50" tilecount="3072">
+  <image source="temple.png" width="3200" height="2400"/>
+ </tileset>
+ <layer name="front" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC9XQyU7CUBTG8ZYd9RmMgICzoHHp8BbOxnmMRuPTOAZHXDgsjGufwzHOGhCkUVfO/6YXaFqowMLEm/xyTm/v+ZpbSbJfxSiBC254UAovfPD/Mt+FbvSgF33oxwAGMYRhjBhm2tGBTtP8qRDCClaxhnVsYBNhQ84c5rGARSxh2ZBzgUtc4Ro3uMUd7g05RzjGiZg7w7no22T+B1xwwyOevfDBL6dzWmX9fDYhKbvwH+ZsO3Wqs/CcZEYyR82SlyknwrkG2Uq1yTLmlCl6Rq45mkNZ951DjnanHexir4AcrUbxiBjieEIij5xy+gpUogqvnHtDLX0AQdQp2XO0ee37B+y/yOl5s3d84BNfppxRMsYwjkZHbprQjBaHZFkPil4j1KjoY9S46BNUVfTPinU+db8i6141ezViP0ANir4+w9nU/QzvJkQ/SZ0S/TR1RvSzNjlbNu/Maz+Ps/95/QCNFiQreAYAAA==
+  </data>
+ </layer>
+ <layer name="deco" width="18" height="23">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGAWjYBQMdRDCzsAQyk6ZGbpcDAxTgGZMBWIdLvLNyUXSm0OkOSuA6lYC8TogXgXEq6H0GiBeC2WD5DYg0RspcOMoGFgAAHdjxeh4BgAA
+  </data>
+ </layer>
+</map>

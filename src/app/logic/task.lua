@@ -10,9 +10,11 @@ local task = {
     FARMING = 0,
     BODY_DISPOSING = 1,
     JOB_HUNTING = 2,
-    PATROLLING = 3,
-    GOING_TO_BED = 4,
-    STEALING = 5
+    PATROLING = 3,
+    GUARDING = 4,
+    GOING_TO_BED = 5,
+    STEALING = 6,
+    BAKING = 7
 }
 
 return task

@@ -6,6 +6,8 @@
 -- To change this template use File | Settings | File Templates.
 --
 
+local STOP = -1
+
 local cal_shortest_dis = require("app.logic.cal_shortest_dis")
 
 local patrol = {
@@ -17,6 +19,7 @@ local patrol = {
         if self.path == nil then
             self.waited_time = self.waited_time + dt
             if self.waited_time < self.target_wait_time then
+                minions[index].dir = STOP
                 return
             end
             self.waited_time = 0.0

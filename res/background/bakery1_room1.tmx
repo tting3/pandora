@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="13" height="8" tilewidth="50" tileheight="50" nextobjectid="1">
+ <tileset firstgid="1" name="collision" tilewidth="50" tileheight="50" tilecount="7">
+  <image source="collision.png" width="350" height="50"/>
+ </tileset>
+ <tileset firstgid="8" name="room" tilewidth="50" tileheight="50" tilecount="40">
+  <image source="room.png" width="500" height="200"/>
+ </tileset>
+ <tileset firstgid="48" name="RPGpack_sheet" tilewidth="50" tileheight="50" tilecount="260">
+  <image source="RPGpack_sheet.png" width="1000" height="650"/>
+ </tileset>
+ <tileset firstgid="308" name="oven" tilewidth="50" tileheight="50" tilecount="4">
+  <image source="oven.png" width="100" height="100"/>
+ </tileset>
+ <layer name="collision" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgYGBgJAHDADY5ViL0EAOooQddHzY+Lv8QUkOK3bjcD1PHhoMNAwCg5chgoAEAAA==
+  </data>
+ </layer>
+ <layer name="floor" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgIB9IArEUEEvjYePTg6wenx5lIFYBYlUkWhlNHB3oArEeEOsj0bpo4oT8hYuPDcDcgotPLgAAh6sL3qABAAA=
+  </data>
+ </layer>
+ <layer name="entrance" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgwA4EcYjjA0Jk6BlOgB8HmxIAAHgaWcOgAQAA
+  </data>
+ </layer>
+ <layer name="storage" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgGKaAkUT+IAUARSBxb6ABAAA=
+  </data>
+ </layer>
+ <layer name="oven_deco" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NggAATRgYGU0YEjUsMHZgzotK4xEYBeQAAHlzhRqABAAA=
+  </data>
+ </layer>
+ <layer name="oven" width="13" height="8">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC2NgIB+YMaLSuMRGAfkAAJdR3tWgAQAA
+  </data>
+ </layer>
+</map>

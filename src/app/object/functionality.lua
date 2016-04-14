@@ -8,7 +8,10 @@
 
 local functionality = {
     LB = 0,
-    FARM = 1
+    FARM = 1,
+    SLAVE_LB = 2,
+    GUARD_STATION = 3,
+    GUARD_LB = 4
 }
 
 return functionality
