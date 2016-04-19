@@ -279,6 +279,32 @@ function SecondScene:make_minion(name, id, x, y)
     self.minion_size = self.minion_size + 1
 end
 
+local function setOpacity_layer(layer, size, opacity)
+    if layer == nil then
+        return
+    end
+    for i = 0, size.width - 1 do
+        for j = 0, size.height - 1 do
+            local tile = layer:getTileAt(cc.p(i, j))
+            if tile ~= nil then
+                tile:setOpacity(opacity)
+            end
+        end
+    end
+end
+
+local function setOpacity_walls_roofs(struct, roofs_opacity, walls_opacity)
+    if struct.walls ~= nil then
+        setOpacity_layer(struct.walls:layerNamed("front"), struct.walls:getMapSize(), walls_opacity)
+        setOpacity_layer(struct.walls:layerNamed("back"), struct.walls:getMapSize(), walls_opacity)
+    end
+    if struct.roofs ~= nil then
+        setOpacity_layer(struct.roofs:layerNamed("front"), struct.roofs:getMapSize(), roofs_opacity)
+        setOpacity_layer(struct.roofs:layerNamed("back"), struct.roofs:getMapSize(), roofs_opacity)
+        setOpacity_layer(struct.roofs:layerNamed("deco"), struct.roofs:getMapSize(), roofs_opacity)
+    end
+end
+
 local function back_enter(tiledmap, layer_name, light)
     if tiledmap == nil then
         return
@@ -1129,12 +1155,56 @@ function SecondScene:remove_shouting(target)
     target.shouting = nil
 end
 
+local m_last_build_index = 0
+
 function SecondScene:m_check_surroundings(dt)
     --release_print(self.time)
     local i = self.m_character.position.x / 50.0
     local j = self.m_character.position.y / 50.0
     i = math.floor(i) + 1
     j = math.floor(j) + 1
+    if self.m_character.height_level == 0 then
+        local struct_index = self.map_build_index[i][j]
+        if struct_index ~= 0 then
+            local opacity_flag = 0
+            local level = self.structs[struct_index].roofs
+            if level ~= nil then
+                local struct_i = math.floor(i - 1 - self.structs[struct_index].position.x / 50)
+                local struct_j = math.floor(self.structs[struct_index].map.y - j + self.structs[struct_index].position.y / 50)
+                local function check_roofs(layer)
+                    if struct_i >= 0 and struct_i < self.structs[struct_index].map.x and struct_j >= 0 and struct_j < self.structs[struct_index].map.y then
+                        local gid = layer:tileGIDAt(cc.p(struct_i, struct_j))
+                        local property = level:propertiesForGID(gid)
+                        if property ~= 0 then
+                            opacity_flag = 1
+                        end
+                    end
+                end
+                local layer = level:layerNamed("front")
+                if layer ~= nil then
+                    check_roofs(layer)
+                end
+                local layer = level:layerNamed("back")
+                if layer ~= nil then
+                    check_roofs(layer)
+                end
+                local layer = level:layerNamed("deco")
+                if layer ~= nil then
+                    check_roofs(layer)
+                end
+                if opacity_flag == 1 then
+                    setOpacity_walls_roofs(self.structs[struct_index], 100, 200)
+                else
+                    setOpacity_walls_roofs(self.structs[struct_index], 255, 255)
+                end
+            end
+        else
+            if m_last_build_index ~= 0 then
+                setOpacity_walls_roofs(self.structs[m_last_build_index], 255, 255)
+            end
+        end
+        m_last_build_index = struct_index
+    end
     local characters = {}
     for ii = i - 1, i + 1 do
         for jj = j - 1, j + 1 do
@@ -1150,8 +1220,9 @@ function SecondScene:m_check_surroundings(dt)
     local objects = {}
     if self.map_emergent_events[i][j][1] ~= 0 then
         for ii = 2, self.map_emergent_events[i][j][1] + 1 do
+            --TODO
             if self.map_emergent_events[i][j][ii].event_type == DEAD_BODY then
-                if self.map_emergent_events[i][j][ii].height_level == self.m_character.height_level or self.map_emergent_events[i][j][ii].height_level == 0 then
+                if self.m_character:check_in_sight(self.map_emergent_events[i][j][ii].position, self.map_emergent_events[i][j][ii].height_level, self.map_build_index, self.structs) then
                     --[[
                     local index = #objects + 1
                     objects[index] = {}
@@ -1164,7 +1235,7 @@ function SecondScene:m_check_surroundings(dt)
                     --]]
                 end
             elseif self.map_emergent_events[i][j][ii].event_type == DROPPED_ITEM then
-                if self.map_emergent_events[i][j][ii].height_level == self.m_character.height_level or self.map_emergent_events[i][j][ii].height_level == 0 then
+                if self.m_character:check_in_sight(self.map_emergent_events[i][j][ii].position, self.map_emergent_events[i][j][ii].height_level, self.map_build_index, self.structs) then
                     --[[
                     local index = #objects + 1
                     objects[index] = {}
@@ -1175,6 +1246,7 @@ function SecondScene:m_check_surroundings(dt)
                     objects[index].parameters = nil
                     objects[index].stop_when_walking = false
                     --]]
+                    release_print("here")
                 end
             elseif self.map_emergent_events[i][j][ii].event_type == HELP then
             elseif self.map_emergent_events[i][j][ii].event_type == TRADE then

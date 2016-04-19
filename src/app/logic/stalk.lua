@@ -28,23 +28,25 @@ local stalk = {
         end
         if self.last_seen == nil then
             local dis = (stalking_character.position.x - minions[index].position.x) * (stalking_character.position.x - minions[index].position.x) + (stalking_character.position.y - minions[index].position.y) * (stalking_character.position.y - minions[index].position.y)
-            if (stalking_character.height_level ~= minions[index].height_level and stalking_character.height_level ~= 0) or dis > 50*5*50*5 then
+            if (minions[index]:check_in_sight(stalking_character.position, stalking_character.height_level, map, structs) == false) or dis > 50*5*50*5 then
                 self.last_seen = stalking_character.position
-                local i
-                local j
-                if minions[index].height_level < stalking_character.height_level then
-                    self.enter_leave = enter_level:new()
-                    i = stalking_character.position.x / 50.0
-                    j = stalking_character.position.y / 50.0
-                else
-                    self.enter_leave = leave_level:new()
-                    i = minions[index].position.x / 50.0
-                    j = minions[index].position.y / 50.0
+                if minions[index].height_level ~= stalking_character.height_level then
+                    local i
+                    local j
+                    if minions[index].height_level < stalking_character.height_level then
+                        self.enter_leave = enter_level:new()
+                        i = stalking_character.position.x / 50.0
+                        j = stalking_character.position.y / 50.0
+                    else
+                        self.enter_leave = leave_level:new()
+                        i = minions[index].position.x / 50.0
+                        j = minions[index].position.y / 50.0
+                    end
+                    i = math.floor(i) + 1
+                    j = math.floor(j) + 1
+                    local struct_index = map[i][j]
+                    self.enter_leave:init(struct_index)
                 end
-                i = math.floor(i) + 1
-                j = math.floor(j) + 1
-                local struct_index = map[i][j]
-                self.enter_leave:init(struct_index)
                 self.path = nil
             elseif minions[index].height_level > 0 and stalking_character.height_level == 0 and self.enter_leave == nil then
                 self.enter_leave = leave_level:new()
@@ -57,7 +59,7 @@ local stalk = {
             end
         else
             local dis = (stalking_character.position.x - minions[index].position.x) * (stalking_character.position.x - minions[index].position.x) + (stalking_character.position.y - minions[index].position.y) * (stalking_character.position.y - minions[index].position.y)
-            if (stalking_character.height_level == minions[index].height_level or stalking_character.height_level == 0) and dis <= 50*5*50*5 then
+            if (minions[index]:check_in_sight(stalking_character.position, stalking_character.height_level, map, structs)) and dis <= 50*5*50*5 then
                 self.last_seen = nil
                 self.enter_leave = nil
             end

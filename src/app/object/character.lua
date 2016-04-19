@@ -380,6 +380,65 @@ local character = {
         end
         return true
     end,
+    check_in_sight = function(self, target_pos, target_height_level, map, structs)
+        if target_height_level ~= 0 then
+            if target_height_level == self.height_level then
+                return true
+            else
+                return false
+            end
+        else
+            if self.height_level == 0 then
+                local function check_under_roof(pos)
+                    local i = pos.x / 50.0
+                    local j = pos.y / 50.0
+                    i = math.floor(i) + 1
+                    j = math.floor(j) + 1
+                    local struct_index = map[i][j]
+                    if struct_index ~= 0 then
+                        local level = structs[struct_index].roofs
+                        if level ~= nil then
+                            local struct_i = math.floor(i - 1 - structs[struct_index].position.x / 50)
+                            local struct_j = math.floor(structs[struct_index].map.y - j + structs[struct_index].position.y / 50)
+                            local function check_roofs(layer)
+                                if layer ~= nil and struct_i >= 0 and struct_i < structs[struct_index].map.x and struct_j >= 0 and struct_j < structs[struct_index].map.y then
+                                    local gid = layer:tileGIDAt(cc.p(struct_i, struct_j))
+                                    local property = level:propertiesForGID(gid)
+                                    if property ~= 0 then
+                                        return struct_index
+                                    end
+                                end
+                                return 0
+                            end
+                            local layer = level:layerNamed("front")
+                            local result = check_roofs(layer)
+                            if result ~= 0 then
+                                return result
+                            end
+                            local layer = level:layerNamed("back")
+                            local result = check_roofs(layer)
+                            if result ~= 0 then
+                                return result
+                            end
+                            local layer = level:layerNamed("deco")
+                            local result = check_roofs(layer)
+                            if result ~= 0 then
+                                return result
+                            end
+                        end
+                    end
+                    return 0
+                end
+                local result = check_under_roof(target_pos)
+                if result ~= 0 then
+                    if result ~= check_under_roof(self.position) then
+                        return false
+                    end
+                end
+            end
+            return true
+        end
+    end,
     change_position_m = function(self, x, y, structs, map, parent)
         if self:check_chained(x, y) == false then
             return -1 ,0
