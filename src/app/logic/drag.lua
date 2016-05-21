@@ -100,8 +100,10 @@ local check_chain_block = function(dragged_one, target, height_level, structs, m
     while target_i ~= i or target_j ~= j do
         local temp_flag = 0
         local temp_i, temp_i_x, temp_i_y, temp_j, temp_j_y, temp_j_x
-        if (x_dir > 0 and i + x_dir <= target_i) or (x_dir < 0 and i + x_dir >= target_i) then
-            temp_i = i + x_dir
+        local orig_i = i
+        local orig_j = j
+        if (x_dir > 0 and orig_i + x_dir <= target_i) or (x_dir < 0 and orig_i + x_dir >= target_i) then
+            temp_i = orig_i + x_dir
             if x_dir > 0 then
                 temp_i_x = (temp_i - 1) * 50
             else
@@ -114,8 +116,8 @@ local check_chain_block = function(dragged_one, target, height_level, structs, m
             temp_i_x = target.x
             temp_i_y = target.y
         end
-        if (y_dir > 0 and j + y_dir <= target_j) or (y_dir < 0 and j + y_dir >= target_j) then
-            temp_j = j + y_dir
+        if (y_dir > 0 and orig_j + y_dir <= target_j) or (y_dir < 0 and orig_j + y_dir >= target_j) then
+            temp_j = orig_j + y_dir
             if y_dir > 0 then
                 temp_j_y = (temp_j - 1) * 50
             else

@@ -183,6 +183,7 @@ local character = {
                 new_event:init(hurting, damage.source, self, time, date, self.position, self.height_level)
                 self:add_event(new_event)
                 self:add_enermy(damage.source)
+                self.signals[hurted_by_others] = damage.source.index
             end
         end
         if self.hp <= 0 then
@@ -379,6 +380,15 @@ local character = {
             end
         end
         return true
+    end,
+    check_in_sight_dis = function(self, target_pos, target_height_level, map, structs, dis)
+        if self:check_in_sight(target_pos, target_height_level, map, structs) == false then
+            return false
+        end
+        local real_dis = (self.position.x - target_pos.x) * (self.position.x - target_pos.x) + (self.position.y - target_pos.y) * (self.position.y - target_pos.y)
+        if real_dis > dis then
+            return false
+        end
     end,
     check_in_sight = function(self, target_pos, target_height_level, map, structs)
         if target_height_level ~= 0 then
@@ -724,6 +734,9 @@ local character = {
         end
         return nil
     end,
+    call_for_help = function(self, parent)
+
+    end,
     create_dialog = function(self, parent, duration, text)
         if self.dialog ~= nil then
             self.dialog.label:removeFromParentAndCleanup(true)
@@ -772,7 +785,7 @@ local character = {
         if self.dialog ~= nil then
             self.dialog.label:move(display.cx + self.position.x - parent.m_character.position.x, display.cy + 50 + self.position.y - parent.m_character.position.y)
             self.dialog.time = self.dialog.time + dt
-            if self.dialog.time >= self.dialog.duration then
+            if self.dialog.time >= self.dialog.duration and self.dialog.duration ~= -1 then
                 self.dialog.bg:removeFromParentAndCleanup(true)
                 self.dialog.text:removeFromParentAndCleanup(true)
                 self.dialog.label:removeFromParentAndCleanup(true)
@@ -1377,7 +1390,7 @@ function character:new(o)
     o.enermy_list = {}
     o.signals = {}
     for i = 1, 5 do
-        o.signals[i] = 0
+        o.signals[i] = -1
     end
     o.shouting = nil
     o.dialog = nil

@@ -28,6 +28,7 @@ local guardian_patrol = require("app.logic.guardian_patrol")
 local sleep = require("app.logic.sleep")
 local task = require("app.logic.task")
 local drag = require("app.logic.drag")
+local escape = require("app.logic.escape")
 local item_type = require("app.object.item_type")
 local functionality = require("app.object.functionality")
 
@@ -221,8 +222,21 @@ local minion_logic = {
         end
     end,
     free_mind = function(self, parent, m_character, minions, structs, time, map, index, dt)
-        if minions[index].signals[hurted_by_others] ~= 0 then
-
+        if minions[index].signals[hurted_by_others] ~= -1 then
+            self.escape = escape:new()
+            local minion_index = minions[index].signals[hurted_by_others]
+            if minion_index ~= 0 then
+                self.escape:init(minions[minion_index])
+            else
+                self.escape:init(m_character)
+            end
+            minions[index].signals[hurted_by_others] = -1
+        end
+        if self.escape ~= nil then
+            local result = self.escape:run(minions, index, map, structs, dt)
+            if result == success then
+                self.escape = nil
+            end
         end
     end,
     think_about_life = function(self, parent, m_character, minions, structs, time, map, index, dt)

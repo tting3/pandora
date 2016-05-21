@@ -1220,7 +1220,6 @@ function SecondScene:m_check_surroundings(dt)
     local objects = {}
     if self.map_emergent_events[i][j][1] ~= 0 then
         for ii = 2, self.map_emergent_events[i][j][1] + 1 do
-            --TODO
             if self.map_emergent_events[i][j][ii].event_type == DEAD_BODY then
                 if self.m_character:check_in_sight(self.map_emergent_events[i][j][ii].position, self.map_emergent_events[i][j][ii].height_level, self.map_build_index, self.structs) then
                     --[[
@@ -1246,7 +1245,6 @@ function SecondScene:m_check_surroundings(dt)
                     objects[index].parameters = nil
                     objects[index].stop_when_walking = false
                     --]]
-                    release_print("here")
                 end
             elseif self.map_emergent_events[i][j][ii].event_type == HELP then
             elseif self.map_emergent_events[i][j][ii].event_type == TRADE then

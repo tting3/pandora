@@ -47,7 +47,6 @@ local cal_shortest_dis_new = {
             ]]
             local new_x = 0.0
             local new_y = 0.0
-            ---[[
             if self.last_pref == -1 then
                 if math.abs(x) >= math.abs(y) then
                     self.last_pref = 0
@@ -108,34 +107,6 @@ local cal_shortest_dis_new = {
                     end
                 end
             end
-            --]]
-            --[[
-            if (math.abs(x) < math.abs(y) and math.abs(x) >  real_speed) or math.abs(y) <  real_speed then
-                if math.abs(x) >=  real_speed then
-                    if x > 0.0 then
-                        new_x =  real_speed
-                    else
-                        new_x = 0.0 -  real_speed
-                    end
-                    new_y = 0.0
-                else
-                    if math.abs(x) ~= 0.0 then
-                        new_x = x
-                        new_y = 0.0
-                    else
-                        new_x = 0.0
-                        new_y = y
-                    end
-                end
-            else
-                if y > 0.0 then
-                    new_y =  real_speed
-                else
-                    new_y = 0.0 -  real_speed
-                end
-                new_x = 0
-            end
-            --]]
             if new_x > 0 then
                 minions[index].dir = RIGHT
             end
